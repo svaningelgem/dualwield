@@ -1,10 +1,8 @@
 package com.ranull.dualwield;
 
-import com.ranull.dualwield.nms.NMS;
+import com.ranull.dualwield.nms.*;
 import com.ranull.dualwield.events.Events;
 import com.ranull.dualwield.managers.WieldManager;
-import com.ranull.dualwield.nms.NMS_v1_15_R1;
-import com.ranull.dualwield.nms.NMS_v1_16_R1;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class DualWield extends JavaPlugin {
@@ -26,14 +24,18 @@ public final class DualWield extends JavaPlugin {
         try {
             String version = getServer().getClass().getPackage().getName().split("\\.")[3];
 
-            if (version.equals("v1_15_R1")) {
+            if (version.equals("v1_13_R2")) {
+                nms = new NMS_v1_13_R2();
+            } else if (version.equals("v1_14_R1")) {
+                nms = new NMS_v1_14_R1();
+            } else if (version.equals("v1_15_R1")) {
                 nms = new NMS_v1_15_R1();
             } else if (version.equals("v1_16_R1")) {
                 nms = new NMS_v1_16_R1();
             }
 
             return nms != null;
-        } catch (ArrayIndexOutOfBoundsException whatVersionAreYouUsingException) {
+        } catch (ArrayIndexOutOfBoundsException ignored) {
             return false;
         }
     }

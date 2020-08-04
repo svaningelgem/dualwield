@@ -68,7 +68,7 @@ public class WieldManager {
                 @Override
                 public void run() {
                     if (blockBreakData.getCrackAmount() < finalCrackAmount) {
-                        if ((System.currentTimeMillis() - blockBreakData.getLastMineTime()) < 200) {
+                        if ((System.currentTimeMillis() - blockBreakData.getLastMineTime()) < 210) {
                             // Continue because player is mining
                             blockCrackAnimation(blockBreakData);
                             blockBreakData.addCrackAmount();

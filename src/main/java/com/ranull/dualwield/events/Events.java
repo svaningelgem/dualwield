@@ -26,35 +26,33 @@ public class Events implements Listener {
     public void onPlayerInteract(PlayerInteractEvent event) {
         Player player = event.getPlayer();
 
-        if (player.getGameMode() != GameMode.CREATIVE && event.getHand() == EquipmentSlot.OFF_HAND) {
+        if (event.getHand() == EquipmentSlot.OFF_HAND) {
             ItemStack itemInOffHand = player.getInventory().getItemInOffHand();
 
-            if (itemInOffHand != null) {
-                if (event.getClickedBlock() != null) {
-                    Block block = event.getClickedBlock();
+            if (player.getGameMode() == GameMode.SURVIVAL && itemInOffHand != null && event.getClickedBlock() != null) {
+                Block block = event.getClickedBlock();
 
-                    BlockBreakData blockBreakData;
+                BlockBreakData blockBreakData;
 
-                    // Get blockBreakData
-                    if (!wieldManager.hasBreakData(block)) {
-                        blockBreakData = new BlockBreakData(block, player, player.getInventory().getItemInOffHand(), new Random().nextInt(2000));
+                // Get blockBreakData
+                if (!wieldManager.hasBreakData(block)) {
+                    blockBreakData = new BlockBreakData(block, player, player.getInventory().getItemInOffHand(), new Random().nextInt(2000));
 
-                        wieldManager.addBreakData(blockBreakData);
-                        wieldManager.runBlockBreakTask(blockBreakData);
-                    } else {
-                        blockBreakData = wieldManager.getBreakData(block);
-                    }
+                    wieldManager.addBreakData(blockBreakData);
+                    wieldManager.runBlockBreakTask(blockBreakData);
+                } else {
+                    blockBreakData = wieldManager.getBreakData(block);
+                }
 
-                    // Update mining data
-                    if (blockBreakData.getItemInOffHand().equals(itemInOffHand)) {
-                        // Item matches
-                        blockBreakData.updateLastMineTime();
-                        wieldManager.blockHitSound(blockBreakData);
-                    } else {
-                        // Item does not match
-                        wieldManager.blockCrackAnimation(blockBreakData, -1);
-                        wieldManager.removeBreakData(blockBreakData);
-                    }
+                // Update mining data
+                if (blockBreakData.getItemInOffHand().equals(itemInOffHand)) {
+                    // Item matches
+                    blockBreakData.updateLastMineTime();
+                    wieldManager.blockHitSound(blockBreakData);
+                } else {
+                    // Item does not match
+                    wieldManager.blockCrackAnimation(blockBreakData, -1);
+                    wieldManager.removeBreakData(blockBreakData);
                 }
             }
 
