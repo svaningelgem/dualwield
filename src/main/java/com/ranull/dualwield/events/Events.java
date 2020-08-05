@@ -27,6 +27,7 @@ public class Events implements Listener {
         Player player = event.getPlayer();
 
         if (event.getHand() == EquipmentSlot.OFF_HAND) {
+            ItemStack itemInMainHand = player.getInventory().getItemInMainHand();
             ItemStack itemInOffHand = player.getInventory().getItemInOffHand();
 
             if (player.getGameMode() == GameMode.SURVIVAL && itemInOffHand != null && event.getClickedBlock() != null) {
@@ -36,7 +37,7 @@ public class Events implements Listener {
 
                 // Get blockBreakData
                 if (!wieldManager.hasBreakData(block)) {
-                    blockBreakData = new BlockBreakData(block, player, player.getInventory().getItemInOffHand(), new Random().nextInt(2000));
+                    blockBreakData = new BlockBreakData(block, player, itemInOffHand, new Random().nextInt(2000));
 
                     wieldManager.addBreakData(blockBreakData);
                     wieldManager.runBlockBreakTask(blockBreakData);
@@ -57,7 +58,7 @@ public class Events implements Listener {
             }
 
             // Hand animation
-            if (itemInOffHand.getType() == Material.AIR && player.getInventory().getItemInMainHand().getType() == Material.AIR) {
+            if (itemInMainHand.getType() == Material.AIR && itemInOffHand.getType() == Material.AIR) {
                 wieldManager.getNMS().mainHandAnimation(player);
             } else {
                 wieldManager.getNMS().offHandAnimation(player);
@@ -68,8 +69,19 @@ public class Events implements Listener {
     @EventHandler
     public void onPlayerInteractEntity(PlayerInteractEntityEvent event) {
         if (event.getHand() == EquipmentSlot.OFF_HAND) {
+            Player player = event.getPlayer();
+
             wieldManager.attackEntity(event.getPlayer(), event.getRightClicked());
-            wieldManager.getNMS().offHandAnimation(event.getPlayer());
+
+            ItemStack itemInMainHand = player.getInventory().getItemInMainHand();
+            ItemStack itemInOffHand = player.getInventory().getItemInOffHand();
+
+            // Hand animation
+            if (itemInMainHand.getType() == Material.AIR && itemInOffHand.getType() == Material.AIR) {
+                wieldManager.getNMS().mainHandAnimation(player);
+            } else {
+                wieldManager.getNMS().offHandAnimation(player);
+            }
         }
     }
 }

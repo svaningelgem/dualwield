@@ -76,7 +76,11 @@ public class NMS_v1_14_R1 implements NMS {
 		AttributeModifier attributeModifier = Iterables
 				.getFirst(attributeMultimap.get("generic.attackDamage"), null);
 
-		return attributeModifier.getAmount() + 1;
+		if (attributeModifier != null) {
+			return attributeModifier.getAmount() + 1;
+		}
+
+		return 1;
 	}
 
 	@Override
@@ -170,7 +174,7 @@ public class NMS_v1_14_R1 implements NMS {
 			}
 
 			float entityHealth = 0.0F;
-			boolean flag4 = false;
+			boolean onFire = false;
 			int fireAspectEnchantmentLevel = EnchantmentManager.getEnchantmentLevel(Enchantments.FIRE_ASPECT, craftItemInOffHand);
 			if (nmsEntity instanceof EntityLiving) {
 				entityHealth = ((EntityLiving)nmsEntity).getHealth();
@@ -178,7 +182,7 @@ public class NMS_v1_14_R1 implements NMS {
 					EntityCombustByEntityEvent combustEvent = new EntityCombustByEntityEvent(entityPlayer.getBukkitEntity(), nmsEntity.getBukkitEntity(), 1);
 					Bukkit.getPluginManager().callEvent(combustEvent);
 					if (!combustEvent.isCancelled()) {
-						flag4 = true;
+						onFire = true;
 						nmsEntity.setOnFire(combustEvent.getDuration(), false);
 					}
 				}
@@ -200,8 +204,8 @@ public class NMS_v1_14_R1 implements NMS {
 
 				if (shouldSweep) {
 					float f4 = 1.0F + EnchantmentManager.a(entityPlayer) * damage;
-					List<EntityLiving> list = entityPlayer.world.a(EntityLiving.class, nmsEntity.getBoundingBox().grow(1.0D, 0.25D, 1.0D));
-					Iterator iterator = list.iterator();
+					List<EntityLiving> entityLivingList = entityPlayer.world.a(EntityLiving.class, nmsEntity.getBoundingBox().grow(1.0D, 0.25D, 1.0D));
+					Iterator iterator = entityLivingList.iterator();
 
 					sweepLoop:
 					while(true) {
@@ -310,8 +314,9 @@ public class NMS_v1_14_R1 implements NMS {
 				entityPlayer.applyExhaustion(entityPlayer.world.spigotConfig.combatExhaustion);
 			} else {
 				player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_ATTACK_NODAMAGE, 1.0F, 1.0F);
-				if (flag4) {
-					nmsEntity.extinguish();
+
+				if (onFire) {
+					entity.setFireTicks(0);
 				}
 
 				player.updateInventory();
