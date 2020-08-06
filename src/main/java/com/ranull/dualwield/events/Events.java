@@ -8,7 +8,6 @@ import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
@@ -88,10 +87,5 @@ public class Events implements Listener {
                 wieldManager.getNMS().offHandAnimation(player);
             }
         }
-    }
-
-    @EventHandler
-    public void e(EntityDamageByEntityEvent event) {
-        event.getDamager().sendMessage(event.getDamage() + "");
     }
 }
