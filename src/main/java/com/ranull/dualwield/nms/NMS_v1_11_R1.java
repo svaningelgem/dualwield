@@ -27,16 +27,6 @@ import java.util.Random;
 
 public class NMS_v1_11_R1 implements NMS {
 	@Override
-	public void mainHandAnimation(Player player) {
-		EntityPlayer entityPlayer = ((CraftPlayer) player).getHandle();
-		PlayerConnection playerConnection = entityPlayer.playerConnection;
-
-		PacketPlayOutAnimation packetPlayOutAnimation = new PacketPlayOutAnimation(entityPlayer, 0);
-		playerConnection.sendPacket(packetPlayOutAnimation);
-		playerConnection.a(new PacketPlayInArmAnimation(EnumHand.MAIN_HAND));
-	}
-
-	@Override
 	public void offHandAnimation(Player player) {
 		EntityPlayer entityPlayer = ((CraftPlayer) player).getHandle();
 		PlayerConnection playerConnection = entityPlayer.playerConnection;
@@ -157,19 +147,49 @@ public class NMS_v1_11_R1 implements NMS {
 	}
 
 	public boolean calculateUnbreakingChance(org.bukkit.inventory.ItemStack itemStack) {
-		int level = itemStack.getEnchantmentLevel(Enchantment.DURABILITY);
+		int enchantmentLevel = itemStack.getEnchantmentLevel(Enchantment.DURABILITY);
 
 		Random random = new Random();
 
-		if (level == 1) {
+		if (enchantmentLevel == 1) {
 			return random.nextFloat() <= 0.20f;
-		} else if (level == 2) {
+		} else if (enchantmentLevel == 2) {
 			return random.nextFloat() <= 0.27f;
-		} else if (level == 3) {
+		} else if (enchantmentLevel == 3) {
 			return random.nextFloat() <= 0.30f;
 		}
 
 		return true;
+	}
+
+	@Override
+	public org.bukkit.inventory.ItemStack setAPIData(org.bukkit.inventory.ItemStack itemStack) {
+		ItemStack craftItemStack = CraftItemStack.asNMSCopy(itemStack);
+		NBTTagCompound nbtTagCompound = (craftItemStack.hasTag()) ? craftItemStack.getTag() : new NBTTagCompound();
+
+		nbtTagCompound.set("dualWieldItem", new NBTTagInt(1));
+		craftItemStack.setTag(nbtTagCompound);
+
+		return CraftItemStack.asBukkitCopy(craftItemStack);
+	}
+
+	@Override
+	public org.bukkit.inventory.ItemStack removeAPIData(org.bukkit.inventory.ItemStack itemStack) {
+		ItemStack craftItemStack = CraftItemStack.asNMSCopy(itemStack);
+		NBTTagCompound nbtTagCompound = (craftItemStack.hasTag()) ? craftItemStack.getTag() : new NBTTagCompound();
+
+		nbtTagCompound.remove("dualWieldItem");
+		craftItemStack.setTag(nbtTagCompound);
+
+		return CraftItemStack.asBukkitCopy(craftItemStack);
+	}
+
+	@Override
+	public boolean hasAPIData(org.bukkit.inventory.ItemStack itemStack) {
+		ItemStack craftItemStack = CraftItemStack.asNMSCopy(itemStack);
+		NBTTagCompound nbtTagCompound = (craftItemStack.hasTag()) ? craftItemStack.getTag() : new NBTTagCompound();
+
+		return nbtTagCompound.hasKey("dualWieldItem");
 	}
 
 	@Override

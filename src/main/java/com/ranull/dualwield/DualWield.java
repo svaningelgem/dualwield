@@ -1,5 +1,6 @@
 package com.ranull.dualwield;
 
+import com.ranull.dualwield.api.DualWieldAPI;
 import com.ranull.dualwield.events.Events;
 import com.ranull.dualwield.managers.WieldManager;
 import com.ranull.dualwield.nms.*;
@@ -7,15 +8,17 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public final class DualWield extends JavaPlugin {
     private NMS nms;
+    private DualWieldAPI dualWieldAPI;
 
     @Override
     public void onEnable() {
         if (!setupNMS()) {
-            getLogger().severe("Version not supported, plugin disabling!");
+            getLogger().severe("Version not supported, disabling plugin!");
             getServer().getPluginManager().disablePlugin(this);
         }
 
         WieldManager wieldManager = new WieldManager(this, nms);
+        dualWieldAPI = new DualWieldAPI(wieldManager, nms);
 
         getServer().getPluginManager().registerEvents(new Events(wieldManager), this);
     }
@@ -46,5 +49,9 @@ public final class DualWield extends JavaPlugin {
         } catch (ArrayIndexOutOfBoundsException ignored) {
             return false;
         }
+    }
+
+    public DualWieldAPI getDualWieldAPI() {
+        return dualWieldAPI;
     }
 }

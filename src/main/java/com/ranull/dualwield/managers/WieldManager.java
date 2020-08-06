@@ -3,10 +3,7 @@ package com.ranull.dualwield.managers;
 import com.ranull.dualwield.DualWield;
 import com.ranull.dualwield.containers.BlockBreakData;
 import com.ranull.dualwield.nms.NMS;
-import org.bukkit.Effect;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.Sound;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
@@ -15,15 +12,12 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class WieldManager {
-    private DualWield plugin;
-    private NMS nms;
-    private Map<Block, BlockBreakData> blockBreakDataList = new HashMap<>();
+    private final DualWield plugin;
+    private final NMS nms;
+    private final Map<Block, BlockBreakData> blockBreakDataList = new HashMap<>();
 
     public WieldManager(DualWield plugin, NMS nms) {
         this.plugin = plugin;
@@ -43,7 +37,7 @@ public class WieldManager {
             for (Player nearbyPlayer : nearbyPlayers) {
                 blockCrackAnimation(blockBreakData, nearbyPlayer);
             }
-            breakBlock(blockBreakData);
+            breakBlockOffHand(blockBreakData);
         } else if (blockHardness > 0.0) {
             // Timed break tool
             float toolStrength = nms.getToolStrength(blockBreakData.getBlock(), blockBreakData.getItemInOffHand());
@@ -114,7 +108,7 @@ public class WieldManager {
                         new BukkitRunnable() {
                             @Override
                             public void run() {
-                                breakBlock(blockBreakData);
+                                breakBlockOffHand(blockBreakData);
                                 removeBreakData(blockBreakData);
                             }
                         }.runTask(plugin);
@@ -125,6 +119,10 @@ public class WieldManager {
                 }
             }.runTaskTimerAsynchronously(plugin, 0L, (long) timer);
         }
+    }
+
+    public BlockBreakData createBlockBreakData(Block block, Player player, ItemStack itemStack) {
+        return new BlockBreakData(block, nms.getBlockHardness(block), player, itemStack, new Random().nextInt(2000));
     }
 
     public List<Player> getNearbyPlayers(Location location, int range) {
@@ -159,16 +157,18 @@ public class WieldManager {
         blockBreakDataList.remove(blockBreakData.getBlock());
     }
 
-    public void breakBlock(BlockBreakData blockBreakData) {
+    public void breakBlockOffHand(BlockBreakData blockBreakData) {
         Player player = blockBreakData.getPlayer();
 
-        ItemStack mainHandItem = player.getInventory().getItemInMainHand().clone();
-        nms.setItemInMainHand(player, blockBreakData.getItemInOffHand());
+        ItemStack itemInMainHand = player.getInventory().getItemInMainHand().clone();
+        ItemStack itemInOffHand = nms.setAPIData(player.getInventory().getItemInOffHand().clone());
+
+        nms.setItemInMainHand(player, itemInOffHand);
 
         BlockBreakEvent blockBreakEvent = new BlockBreakEvent(blockBreakData.getBlock(), blockBreakData.getPlayer());
         plugin.getServer().getPluginManager().callEvent(blockBreakEvent);
 
-        nms.setItemInMainHand(player, mainHandItem);
+        nms.setItemInMainHand(player, itemInMainHand);
         player.updateInventory();
 
         if (!blockBreakEvent.isCancelled()) {
@@ -179,6 +179,19 @@ public class WieldManager {
 
             blockBreakData.getBlock().breakNaturally(blockBreakData.getItemInOffHand());
         }
+    }
+
+    public void attackEntityOffHand(Player player, Entity entity) {
+        ItemStack itemInMainHand = player.getInventory().getItemInMainHand().clone();
+        ItemStack itemInOffHand = nms.setAPIData(player.getInventory().getItemInOffHand().clone());
+
+        nms.setItemInMainHand(player, itemInOffHand);
+
+        nms.attackEntityOffHand(player, entity);
+        nms.damageItem(itemInOffHand, player);
+
+        nms.setItemInMainHand(player, itemInMainHand);
+        player.updateInventory();
     }
 
     public void blockHitSound(BlockBreakData blockBreakData) {

@@ -7,8 +7,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 public interface NMS {
-    void mainHandAnimation(Player player);
-
     void offHandAnimation(Player player);
 
     void blockBreakAnimation(Player player, Block block, int animationID, int stage);
@@ -22,6 +20,12 @@ public interface NMS {
     void attackEntityOffHand(Player player, Entity entity);
 
     void damageItem(ItemStack itemStack, Player player);
+
+    ItemStack setAPIData(ItemStack itemStack);
+
+    ItemStack removeAPIData(ItemStack itemStack);
+
+    boolean hasAPIData(ItemStack itemStack);
 
     double getAttackDamage(ItemStack itemStack);
 

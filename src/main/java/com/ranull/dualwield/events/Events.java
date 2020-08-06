@@ -5,6 +5,7 @@ import com.ranull.dualwield.managers.WieldManager;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -25,19 +26,21 @@ public class Events implements Listener {
     @EventHandler
     public void onPlayerInteract(PlayerInteractEvent event) {
         Player player = event.getPlayer();
+        ItemStack itemInOffHand = player.getInventory().getItemInOffHand();
 
-        if (event.getHand() == EquipmentSlot.OFF_HAND) {
-            ItemStack itemInMainHand = player.getInventory().getItemInMainHand();
-            ItemStack itemInOffHand = player.getInventory().getItemInOffHand();
+        if (player.hasPermission("dualwield.mine")
+                && itemInOffHand.getType() != Material.AIR
+                && event.getHand() == EquipmentSlot.OFF_HAND) {
 
-            if (player.getGameMode() == GameMode.SURVIVAL && itemInOffHand != null && event.getClickedBlock() != null) {
+            if (event.getClickedBlock() != null
+                    && itemInOffHand.getType() != Material.AIR
+                    && player.getGameMode() == GameMode.SURVIVAL) {
                 Block block = event.getClickedBlock();
-
                 BlockBreakData blockBreakData;
 
                 // Get blockBreakData
                 if (!wieldManager.hasBreakData(block)) {
-                    blockBreakData = new BlockBreakData(block, wieldManager.getNMS().getBlockHardness(block), player, itemInOffHand, new Random().nextInt(2000));
+                    blockBreakData = wieldManager.createBlockBreakData(block, player, itemInOffHand);
 
                     wieldManager.addBreakData(blockBreakData);
                     wieldManager.runBlockBreakTask(blockBreakData);
@@ -52,40 +55,31 @@ public class Events implements Listener {
                     wieldManager.blockHitSound(blockBreakData);
                 } else {
                     // Item does not match
-                    for (Player nearbyPlayer : wieldManager.getNearbyPlayers(blockBreakData.getBlock().getLocation(), 20)) {
+                    for (Player nearbyPlayer : wieldManager.getNearbyPlayers(blockBreakData
+                            .getBlock().getLocation(), 20)) {
                         wieldManager.blockCrackAnimation(blockBreakData, nearbyPlayer, -1);
                     }
                     wieldManager.removeBreakData(blockBreakData);
                 }
             }
 
-            // Hand animation
-            if (itemInMainHand.getType() == Material.AIR && itemInOffHand.getType() == Material.AIR) {
-                wieldManager.getNMS().mainHandAnimation(player);
-            } else {
-                wieldManager.getNMS().offHandAnimation(player);
-            }
+            wieldManager.getNMS().offHandAnimation(player);
         }
     }
 
     @EventHandler
     public void onPlayerInteractEntity(PlayerInteractEntityEvent event) {
-        if (event.getHand() == EquipmentSlot.OFF_HAND) {
-            Player player = event.getPlayer();
+        Player player = event.getPlayer();
+        ItemStack itemInOffHand = player.getInventory().getItemInOffHand();
+        Entity entity = event.getRightClicked();
 
-            wieldManager.getNMS().attackEntityOffHand(event.getPlayer(), event.getRightClicked());
+        if (player.hasPermission("dualwield.attack")
+                && itemInOffHand.getType() != Material.AIR
+                && event.getHand() == EquipmentSlot.OFF_HAND
+                && player.getGameMode() != GameMode.SPECTATOR) {
 
-            ItemStack itemInMainHand = player.getInventory().getItemInMainHand();
-            ItemStack itemInOffHand = player.getInventory().getItemInOffHand();
-
-            wieldManager.getNMS().damageItem(itemInOffHand, player);
-
-            // Hand animation
-            if (itemInMainHand.getType() == Material.AIR && itemInOffHand.getType() == Material.AIR) {
-                wieldManager.getNMS().mainHandAnimation(player);
-            } else {
-                wieldManager.getNMS().offHandAnimation(player);
-            }
+            wieldManager.attackEntityOffHand(player, entity);
+            wieldManager.getNMS().offHandAnimation(player);
         }
     }
 }
