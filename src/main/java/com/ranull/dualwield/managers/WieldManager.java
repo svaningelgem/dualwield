@@ -1,20 +1,24 @@
 package com.ranull.dualwield.managers;
 
 import com.ranull.dualwield.DualWield;
-import com.ranull.dualwield.nms.NMS;
 import com.ranull.dualwield.containers.BlockBreakData;
-import org.bukkit.*;
+import com.ranull.dualwield.nms.NMS;
+import org.bukkit.Effect;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.Damageable;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class WieldManager {
     private DualWield plugin;
@@ -31,11 +35,16 @@ public class WieldManager {
     }
 
     public void runBlockBreakTask(BlockBreakData blockBreakData) {
-        if (blockBreakData.getBlock().getType().getHardness() == 0.0) {
+        final List<Player> nearbyPlayers = getNearbyPlayers(blockBreakData.getBlock().getLocation(), 20);
+        float blockHardness = nms.getBlockHardness(blockBreakData.getBlock());
+
+        if (blockHardness == 0.0) {
             // Instant break block
-            blockCrackAnimation(blockBreakData);
+            for (Player nearbyPlayer : nearbyPlayers) {
+                blockCrackAnimation(blockBreakData, nearbyPlayer);
+            }
             breakBlock(blockBreakData);
-        } else if (blockBreakData.getBlock().getType().getHardness() > 0.0) {
+        } else if (blockHardness > 0.0) {
             // Timed break tool
             float toolStrength = nms.getToolStrength(blockBreakData.getBlock(), blockBreakData.getItemInOffHand());
 
@@ -62,19 +71,33 @@ public class WieldManager {
                 timer = timer * (blockBreakData.getHardness() * 2);
             }
 
+            // Swimming debuff
+            if (blockBreakData.getPlayer().getLocation().add(0, 1, 0).getBlock().getType().equals(Material.WATER)) {
+                timer = timer * 5;
+            }
+
+            // Vehicle debuff
+            if (blockBreakData.getPlayer().getVehicle() != null) {
+                timer = timer * 5;
+            }
+
             int finalCrackAmount = crackAmount;
 
             new BukkitRunnable() {
                 @Override
                 public void run() {
                     if (blockBreakData.getCrackAmount() < finalCrackAmount) {
-                        if ((System.currentTimeMillis() - blockBreakData.getLastMineTime()) < 210) {
+                        if ((System.currentTimeMillis() - blockBreakData.getLastMineTime()) < 230) {
                             // Continue because player is mining
-                            blockCrackAnimation(blockBreakData);
+                            for (Player nearbyPlayer : nearbyPlayers) {
+                                blockCrackAnimation(blockBreakData, nearbyPlayer);
+                            }
                             blockBreakData.addCrackAmount();
                         } else {
                             // Cancel because player stopped mining
-                            blockCrackAnimation(blockBreakData, -1);
+                            for (Player nearbyPlayer : nearbyPlayers) {
+                                blockCrackAnimation(blockBreakData, nearbyPlayer, -1);
+                            }
                             removeBreakData(blockBreakData);
 
                             // Cancel runnable
@@ -82,19 +105,38 @@ public class WieldManager {
                         }
                     } else {
                         // Break block mine finished
-                        blockCrackAnimation(blockBreakData, -1);
-                        blockParticleAnimation(blockBreakData);
+                        for (Player nearbyPlayer : nearbyPlayers) {
+                            blockCrackAnimation(blockBreakData, nearbyPlayer, -1);
+                        }
+                        blockCrackParticle(blockBreakData);
 
-                        // Break block and cleanup
-                        breakBlock(blockBreakData);
-                        removeBreakData(blockBreakData);
+                        // Break block on the main thread
+                        new BukkitRunnable() {
+                            @Override
+                            public void run() {
+                                breakBlock(blockBreakData);
+                                removeBreakData(blockBreakData);
+                            }
+                        }.runTask(plugin);
 
                         // Cancel runnable
                         cancel();
                     }
                 }
-            }.runTaskTimer(plugin, 0L, (long) timer);
+            }.runTaskTimerAsynchronously(plugin, 0L, (long) timer);
         }
+    }
+
+    public List<Player> getNearbyPlayers(Location location, int range) {
+        final List<Player> nearbyPlayers = new ArrayList<>();
+
+        for (Entity entity : location.getWorld().getNearbyEntities(location, range, range, range)) {
+            if (entity instanceof Player) {
+                nearbyPlayers.add((Player) entity);
+            }
+        }
+
+        return nearbyPlayers;
     }
 
     public boolean hasBreakData(Block block) {
@@ -130,7 +172,7 @@ public class WieldManager {
         player.updateInventory();
 
         if (!blockBreakEvent.isCancelled()) {
-            damageItem(blockBreakData.getItemInOffHand(), blockBreakData.getPlayer());
+            nms.damageItem(blockBreakData.getItemInOffHand(), player);
 
             blockBreakData.getBlock().getWorld().playEffect(blockBreakData.getBlock().getLocation(),
                     Effect.STEP_SOUND, blockBreakData.getBlock().getType());
@@ -145,62 +187,15 @@ public class WieldManager {
         blockBreakData.getBlock().getWorld().playSound(blockBreakData.getBlock().getLocation(), sound, 0.50F, 0.75F);
     }
 
-    public void damageItem(ItemStack itemStack, Player player) {
-        if (itemStack.getItemMeta() instanceof Damageable
-                && itemStack.getType().getMaxDurability() > 0
-                && calculateDamageChance(itemStack)) {
-            Damageable damageable = (Damageable) itemStack.getItemMeta();
-
-            damageable.setDamage(damageable.getDamage() + 1);
-
-            itemStack.setItemMeta((ItemMeta) damageable);
-
-            if (damageable.getDamage() >= itemStack.getType().getMaxDurability()) {
-                itemStack.setAmount(0);
-                player.getWorld().playSound(player.getLocation(), Sound.ENTITY_ITEM_BREAK, 1, 1);
-            }
-        }
+    public void blockCrackAnimation(BlockBreakData blockBreakData, Player player) {
+        blockCrackAnimation(blockBreakData, player, blockBreakData.getCrackAmount());
     }
 
-    public boolean calculateDamageChance(ItemStack itemStack) {
-        int level = itemStack.getEnchantmentLevel(Enchantment.DURABILITY);
-
-        Random random = new Random();
-
-        if (level == 1 ) {
-            return random.nextFloat() <= 0.20f;
-        } else if (level == 2 ) {
-            return random.nextFloat() <= 0.27f;
-        } else if (level == 3) {
-            return random.nextFloat() <= 0.30f;
-        }
-
-        return true;
+    public void blockCrackAnimation(BlockBreakData blockBreakData, Player player, int stage) {
+        nms.blockBreakAnimation(player, blockBreakData.getBlock(), blockBreakData.getAnimationID(), stage);
     }
 
-    public void blockCrackAnimation(BlockBreakData blockBreakData) {
-        blockCrackAnimation(blockBreakData, blockBreakData.getCrackAmount());
-    }
-
-    public void attackEntity(Player player, Entity entity) {
-        nms.attackEntityOffHand(player, entity);
-    }
-
-    public void blockCrackAnimation(BlockBreakData blockBreakData, int stage) {
-        int range = 20;
-
-        for (Entity entity : blockBreakData.getBlock().getWorld()
-                .getNearbyEntities(blockBreakData.getBlock().getLocation(), range, range, range)) {
-            if (entity instanceof Player) {
-                Player player = (Player) entity;
-
-                nms.blockBreakAnimation(player, blockBreakData.getBlock(), blockBreakData.getAnimationID(), stage);
-            }
-        }
-    }
-
-    public void blockParticleAnimation(BlockBreakData blockBreakData) {
-        blockBreakData.getBlock().getWorld().spawnParticle(Particle.BLOCK_CRACK, blockBreakData.getBlock().getLocation()
-                .add(0.5,0,0.5), 10, blockBreakData.getBlock().getBlockData());
+    public void blockCrackParticle(BlockBreakData blockBreakData) {
+        nms.blockCrackParticle(blockBreakData.getBlock());
     }
 }

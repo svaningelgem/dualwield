@@ -2,5 +2,5 @@ name: ${project.name}
 description: ${project.description}
 version: ${project.version}
 main: com.ranull.dualwield.DualWield
-api-version: 1.13
+#api-version: 1.13
 author: Ranull

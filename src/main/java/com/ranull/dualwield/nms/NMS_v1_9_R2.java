@@ -2,23 +2,21 @@ package com.ranull.dualwield.nms;
 
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
-import net.minecraft.server.v1_14_R1.*;
+import net.minecraft.server.v1_9_R2.*;
 import org.bukkit.Bukkit;
+import org.bukkit.Particle;
 import org.bukkit.Sound;
-import org.bukkit.craftbukkit.v1_14_R1.CraftWorld;
-import org.bukkit.craftbukkit.v1_14_R1.block.data.CraftBlockData;
-import org.bukkit.craftbukkit.v1_14_R1.entity.CraftEntity;
-import org.bukkit.craftbukkit.v1_14_R1.entity.CraftPlayer;
-import org.bukkit.craftbukkit.v1_14_R1.event.CraftEventFactory;
-import org.bukkit.craftbukkit.v1_14_R1.inventory.CraftItemStack;
-import org.bukkit.craftbukkit.v1_14_R1.util.CraftVector;
+import org.bukkit.craftbukkit.v1_9_R2.CraftWorld;
+import org.bukkit.craftbukkit.v1_9_R2.entity.CraftEntity;
+import org.bukkit.craftbukkit.v1_9_R2.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_9_R2.event.CraftEventFactory;
+import org.bukkit.craftbukkit.v1_9_R2.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.v1_9_R2.util.CraftMagicNumbers;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityCombustByEntityEvent;
 import org.bukkit.event.player.PlayerVelocityEvent;
-import org.bukkit.inventory.meta.Damageable;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.material.MaterialData;
 import org.bukkit.util.Vector;
 
@@ -27,7 +25,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
-public class NMS_v1_14_R1 implements NMS {
+public class NMS_v1_9_R2 implements NMS {
 	@Override
 	public void mainHandAnimation(Player player) {
 		EntityPlayer entityPlayer = ((CraftPlayer) player).getHandle();
@@ -63,14 +61,14 @@ public class NMS_v1_14_R1 implements NMS {
 	public void blockCrackParticle(org.bukkit.block.Block block) {
 		MaterialData materialData = new MaterialData(block.getType(), block.getData());
 
-		block.getWorld().spawnParticle(org.bukkit.Particle.BLOCK_CRACK, block.getLocation().add(0.5, 0, 0.5), 10, materialData);
+		block.getWorld().spawnParticle(Particle.BLOCK_CRACK, block.getLocation().add(0.5, 0, 0.5), 10, materialData);
 	}
 
 	@Override
 	public float getToolStrength(org.bukkit.block.Block block, org.bukkit.inventory.ItemStack itemStack) {
 		if (itemStack.getType() != org.bukkit.Material.AIR) {
 			ItemStack craftItemStack = CraftItemStack.asNMSCopy(itemStack);
-			Block nmsBlock = ((CraftBlockData) Bukkit.createBlockData(block.getType())).getState().getBlock();
+			Block nmsBlock = CraftMagicNumbers.getBlock(block);
 
 			return craftItemStack.a(nmsBlock.getBlockData());
 		}
@@ -96,7 +94,7 @@ public class NMS_v1_14_R1 implements NMS {
 					.getFirst(attributeMultimap.get("generic.attackDamage"), null);
 
 			if (attributeModifier != null) {
-				return attributeModifier.getAmount() + 1;
+				return attributeModifier.d() + 1;
 			}
 		}
 
@@ -108,15 +106,15 @@ public class NMS_v1_14_R1 implements NMS {
 		try {
 			World nmsWorld = ((CraftWorld) block.getWorld()).getHandle();
 			Block nmsBlock = nmsWorld.getType(new BlockPosition(block.getX(), block.getY(), block.getZ())).getBlock();
-			SoundEffectType soundEffectType = nmsBlock.getStepSound(nmsBlock.getBlockData());
+			SoundEffectType soundEffectType = nmsBlock.w();
 
 			SoundEffect soundEffect = soundEffectType.g();
-			Field keyField = SoundEffect.class.getDeclaredField("a");
+			Field keyField = SoundEffect.class.getDeclaredField("b");
 			keyField.setAccessible(true);
 
 			MinecraftKey minecraftKey = (MinecraftKey) keyField.get(soundEffect);
 
-			String soundString = minecraftKey.getKey().toUpperCase()
+			String soundString = minecraftKey.a().toUpperCase()
 					.replace(".", "_")
 					.replace("_FALL", "_HIT");
 			Sound sound = Sound.valueOf(soundString);
@@ -130,23 +128,21 @@ public class NMS_v1_14_R1 implements NMS {
 		return Sound.BLOCK_STONE_HIT;
 	}
 
+	@SuppressWarnings("deprecation")
 	@Override
 	public float getBlockHardness(org.bukkit.block.Block block) {
-		Block nmsBlock = ((CraftBlockData) Bukkit.createBlockData(block.getType())).getState().getBlock();
+		Block nmsBlock = CraftMagicNumbers.getBlock(block);
+		World nmsWorld = ((CraftWorld) block.getWorld()).getHandle();
+		BlockPosition blockPosition = new BlockPosition(block.getX(), block.getY(), block.getZ());
 
-		return nmsBlock.strength;
+		return nmsBlock.b(nmsBlock.getBlockData(), nmsWorld, blockPosition);
 	}
 
+	@SuppressWarnings("deprecation")
 	@Override
 	public void damageItem(org.bukkit.inventory.ItemStack itemStack, Player player) {
-		if (itemStack.getItemMeta() instanceof Damageable && itemStack.getType().getMaxDurability() > 0 && calculateUnbreakingChance(itemStack)) {
-			Damageable damageable = (Damageable) itemStack.getItemMeta();
-
-			damageable.setDamage(damageable.getDamage() + 1);
-
-			itemStack.setItemMeta((ItemMeta) damageable);
-
-			if (damageable.getDamage() >= itemStack.getType().getMaxDurability()) {
+		if (itemStack.getType().getMaxDurability() > 0 && calculateUnbreakingChance(itemStack)) {
+			if (itemStack.getDurability() >= itemStack.getType().getMaxDurability()) {
 				ItemStack craftItemStack = CraftItemStack.asNMSCopy(itemStack);
 				EntityPlayer entityPlayer = ((CraftPlayer) player).getHandle();
 
@@ -155,6 +151,8 @@ public class NMS_v1_14_R1 implements NMS {
 				itemStack.setAmount(0);
 				player.getWorld().playSound(player.getLocation(), Sound.ENTITY_ITEM_BREAK, 1, 1);
 			}
+
+			itemStack.setDurability((short) (itemStack.getDurability() + 1));
 		}
 	}
 
@@ -185,22 +183,24 @@ public class NMS_v1_14_R1 implements NMS {
 		float damage = (float) getAttackDamage(itemInOffHand);
 		float enchantmentLevel;
 		if (nmsEntity instanceof EntityLiving) {
-			enchantmentLevel = EnchantmentManager.a(craftItemInOffHand, ((EntityLiving)nmsEntity).getMonsterType());
+			enchantmentLevel = EnchantmentManager.a(craftItemInOffHand, ((EntityLiving) nmsEntity).getMonsterType());
 		} else {
 			enchantmentLevel = EnchantmentManager.a(craftItemInOffHand, EnumMonsterType.UNDEFINED);
 		}
 
-		float attackCooldown = entityPlayer.s(0.5F);
+		float attackCooldown = entityPlayer.o(0.5F);
 
 		damage *= 0.2F + attackCooldown * attackCooldown * 0.8F;
 		enchantmentLevel *= attackCooldown;
+
+		entityPlayer.da();
 
 		if (damage > 0.0F || enchantmentLevel > 0.0F) {
 			boolean cooldownOver = attackCooldown > 0.9F;
 			boolean hasKnockedback = false;
 
 			byte enchantmentByte = 0;
-			int enchantmentCounter = enchantmentByte + EnchantmentManager.b(entityPlayer);
+			int enchantmentCounter = enchantmentByte + EnchantmentManager.a(entityPlayer);
 
 			if (player.isSprinting() && cooldownOver) {
 				player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_ATTACK_KNOCKBACK, 1.0F, 1.0F);
@@ -211,7 +211,6 @@ public class NMS_v1_14_R1 implements NMS {
 			boolean shouldCrit = cooldownOver
 					&& entityPlayer.fallDistance > 0.0F
 					&& !player.isOnGround()
-					&& !entityPlayer.isClimbing()
 					&& !entityPlayer.isInWater()
 					&& !entityPlayer.hasEffect(MobEffects.BLINDNESS)
 					&& !entityPlayer.isPassenger()
@@ -226,13 +225,13 @@ public class NMS_v1_14_R1 implements NMS {
 			damage += enchantmentLevel;
 
 			boolean shouldSweep = false;
-			double d0 = (entityPlayer.E - entityPlayer.D);
+			double d0 = (entityPlayer.J - entityPlayer.I);
 
 			if (cooldownOver && !shouldCrit && !hasKnockedback && player.isOnGround()
-					&& d0 < (double)entityPlayer.db()) {
+					&& d0 < (double) entityPlayer.cl()) {
 				ItemStack itemStack = entityPlayer.b(EnumHand.OFF_HAND);
 
-				if (itemStack.getItem() instanceof ItemSword) {
+				if (itemStack != null && itemStack.getItem() instanceof ItemSword) {
 					shouldSweep = true;
 				}
 			}
@@ -241,67 +240,54 @@ public class NMS_v1_14_R1 implements NMS {
 			boolean onFire = false;
 			int fireAspectEnchantmentLevel = EnchantmentManager.getEnchantmentLevel(Enchantments.FIRE_ASPECT, craftItemInOffHand);
 			if (nmsEntity instanceof EntityLiving) {
-				entityHealth = ((EntityLiving)nmsEntity).getHealth();
+				entityHealth = ((EntityLiving) nmsEntity).getHealth();
 				if (fireAspectEnchantmentLevel > 0 && !nmsEntity.isBurning()) {
 					EntityCombustByEntityEvent combustEvent = new EntityCombustByEntityEvent(entityPlayer.getBukkitEntity(), nmsEntity.getBukkitEntity(), 1);
 					Bukkit.getPluginManager().callEvent(combustEvent);
 					if (!combustEvent.isCancelled()) {
 						onFire = true;
-						nmsEntity.setOnFire(combustEvent.getDuration(), false);
+						nmsEntity.setOnFire(combustEvent.getDuration());
 					}
 				}
 			}
 
-			Vec3D vec3d = nmsEntity.getMot();
+			double vectorX = nmsEntity.motX;
+			double vectorY = nmsEntity.motY;
+			double vectorZ = nmsEntity.motZ;
 			boolean flag5 = nmsEntity.damageEntity(DamageSource.playerAttack(entityPlayer), damage);
 			if (flag5) {
 				if (enchantmentCounter > 0) {
 					if (nmsEntity instanceof EntityLiving) {
-						((EntityLiving)nmsEntity).a(entityPlayer, (float)enchantmentCounter * 0.5F, MathHelper.sin(entityPlayer.yaw * 0.017453292F), (-MathHelper.cos(entityPlayer.yaw * 0.017453292F)));
+						((EntityLiving) nmsEntity).a(entityPlayer, (float) enchantmentCounter * 0.5F, MathHelper.sin(entityPlayer.yaw * 0.017453292F), (-MathHelper.cos(entityPlayer.yaw * 0.017453292F)));
 					} else {
-						nmsEntity.f((-MathHelper.sin(entityPlayer.yaw * 0.017453292F) * (float)enchantmentCounter * 0.5F), 0.1D, (MathHelper.cos(entityPlayer.yaw * 0.017453292F) * (float)enchantmentCounter * 0.5F));
+						nmsEntity.f((-MathHelper.sin(entityPlayer.yaw * 0.017453292F) * (float) enchantmentCounter * 0.5F), 0.1D, (MathHelper.cos(entityPlayer.yaw * 0.017453292F) * (float) enchantmentCounter * 0.5F));
 					}
 
-					entityPlayer.setMot(entityPlayer.getMot().d(0.6D, 1.0D, 0.6D));
+					entityPlayer.motX *= 0.6D;
+					entityPlayer.motZ *= 0.6D;
 					entityPlayer.setSprinting(false);
 				}
 
 				if (shouldSweep) {
-					float f4 = 1.0F + EnchantmentManager.a(entityPlayer) * damage;
-					List<EntityLiving> entityLivingList = entityPlayer.world.a(EntityLiving.class, nmsEntity.getBoundingBox().grow(1.0D, 0.25D, 1.0D));
-					Iterator iterator = entityLivingList.iterator();
+					List list = entityPlayer.world.a(EntityLiving.class, nmsEntity.getBoundingBox().grow(1.0D, 0.25D, 1.0D));
+					Iterator iterator = list.iterator();
 
-					sweepLoop:
-					while(true) {
-						EntityLiving entityliving;
-						do {
-							do {
-								do {
-									do {
-										if (!iterator.hasNext()) {
-											player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_ATTACK_SWEEP, 1.0F, 1.0F);
-											entityPlayer.dE();
-
-											break sweepLoop;
-										}
-
-										entityliving = (EntityLiving)iterator.next();
-									} while(entityliving == entityPlayer);
-								} while(entityliving == nmsEntity);
-							} while(entityPlayer.r(entityliving));
-						} while(entityliving instanceof EntityArmorStand && ((EntityArmorStand)entityliving).isMarker());
-
-						if (entityPlayer.h(entityliving) < 9.0D && entityliving.damageEntity(DamageSource.playerAttack(entityPlayer).sweep(), f4)) {
-							entityliving.a(entityliving, 0.4F, MathHelper.sin(entityPlayer.yaw * 0.017453292F), (-MathHelper.cos(entityPlayer.yaw * 0.017453292F)));
+					while(iterator.hasNext()) {
+						EntityLiving entityliving = (EntityLiving)iterator.next();
+						if (entityliving != entityPlayer && entityliving != entity && !entityliving.r(entityliving) && entityliving.h(entityliving) < 9.0D && entityliving.damageEntity(DamageSource.playerAttack(entityPlayer), 1.0F)) {
+							entityliving.a(entityliving, 0.4F, MathHelper.sin(entityliving.yaw * 0.017453292F), -MathHelper.cos(entityliving.yaw * 0.017453292F));
 						}
 					}
+
+					entityPlayer.world.a(null, entityPlayer.locX, entityPlayer.locY, entityPlayer.locZ, SoundEffects.eb, entityPlayer.bA(), 1.0F, 1.0F);
+					entityPlayer.cI();
 				}
 
 				if (nmsEntity instanceof EntityPlayer && nmsEntity.velocityChanged) {
 					boolean cancelled = false;
 
-					Player otherPlayer = (Player)nmsEntity.getBukkitEntity();
-					Vector velocity = CraftVector.toBukkit(vec3d);
+					Player otherPlayer = (Player) nmsEntity.getBukkitEntity();
+					Vector velocity = new Vector(vectorX, vectorY, vectorZ);
 
 					PlayerVelocityEvent playerVelocityEvent = new PlayerVelocityEvent(otherPlayer, velocity.clone());
 					Bukkit.getServer().getPluginManager().callEvent(playerVelocityEvent);
@@ -313,9 +299,11 @@ public class NMS_v1_14_R1 implements NMS {
 					}
 
 					if (!cancelled) {
-						((EntityPlayer)nmsEntity).playerConnection.sendPacket(new PacketPlayOutEntityVelocity(nmsEntity));
+						((EntityPlayer) nmsEntity).playerConnection.sendPacket(new PacketPlayOutEntityVelocity(nmsEntity));
 						nmsEntity.velocityChanged = false;
-						nmsEntity.setMot(vec3d);
+						nmsEntity.motX = vectorX;
+						nmsEntity.motY = vectorY;
+						nmsEntity.motZ = vectorZ;
 					}
 				}
 
@@ -336,42 +324,64 @@ public class NMS_v1_14_R1 implements NMS {
 					entityPlayer.b(nmsEntity);
 				}
 
+				if (!entityPlayer.world.isClientSide && nmsEntity instanceof EntityHuman) {
+					EntityHuman entityHuman = (EntityHuman) nmsEntity;
+					ItemStack humanItemStack = entityHuman.ct() ? entityHuman.cw() : null;
+					if (craftItemInOffHand != null && humanItemStack != null && craftItemInOffHand.getItem() instanceof ItemAxe && humanItemStack.getItem() == Items.SHIELD) {
+						float f4 = 0.25F + (float)EnchantmentManager.getDigSpeedEnchantmentLevel(entityPlayer) * 0.05F;
+						if (hasKnockedback) {
+							f4 += 0.75F;
+						}
+
+						if (new Random().nextFloat() < f4) {
+							entityHuman.db().a(Items.SHIELD, 100);
+							entityPlayer.world.broadcastEntityEffect(entityHuman, (byte)30);
+						}
+					}
+				}
+
+				if (damage >= 18.0F) {
+					entityPlayer.b(AchievementList.F);
+				}
+
 				entityPlayer.z(nmsEntity);
 				if (nmsEntity instanceof EntityLiving) {
-					EnchantmentManager.a((EntityLiving)nmsEntity, entityPlayer);
+					EnchantmentManager.a((EntityLiving) nmsEntity, entityPlayer);
 				}
 
 				EnchantmentManager.b(entityPlayer, nmsEntity);
 				Object object = nmsEntity;
 
-				if (nmsEntity instanceof EntityComplexPart) {
-					object = ((EntityComplexPart)nmsEntity).owner;
-				}
-
-				if (!entityPlayer.world.isClientSide && !craftItemInOffHand.isEmpty() && object instanceof EntityLiving) {
-					craftItemInOffHand.a((EntityLiving)object, entityPlayer);
-
-					if (craftItemInOffHand.isEmpty()) {
-						entityPlayer.a(EnumHand.MAIN_HAND, ItemStack.a);
+				if (entity instanceof EntityComplexPart) {
+					IComplex icomplex = ((EntityComplexPart) entity).owner;
+					if (icomplex instanceof EntityLiving) {
+						object = icomplex;
 					}
 				}
 
-				if (nmsEntity instanceof EntityLiving) {
-					float newEntityHealth = entityHealth - ((EntityLiving)nmsEntity).getHealth();
-					entityPlayer.a(StatisticList.DAMAGE_DEALT, Math.round(newEntityHealth * 10.0F));
+				if (craftItemInOffHand != null && object instanceof EntityLiving) {
+					craftItemInOffHand.a((EntityLiving) object, entityPlayer);
+					if (craftItemInOffHand.count == 0) {
+						entityPlayer.a(EnumHand.MAIN_HAND, null);
+					}
+				}
+
+				if (entity instanceof EntityLiving) {
+					float newEntityHealth = entityHealth - ((EntityLiving) entity).getHealth();
+					entityPlayer.a(StatisticList.y, Math.round(newEntityHealth * 10.0F));
 
 					if (fireAspectEnchantmentLevel > 0) {
 						EntityCombustByEntityEvent combustEvent = new EntityCombustByEntityEvent(entityPlayer.getBukkitEntity(), nmsEntity.getBukkitEntity(), fireAspectEnchantmentLevel * 4);
 						Bukkit.getPluginManager().callEvent(combustEvent);
 
 						if (!combustEvent.isCancelled()) {
-							nmsEntity.setOnFire(combustEvent.getDuration(), false);
+							nmsEntity.setOnFire(combustEvent.getDuration());
 						}
 					}
 
 					if (entityPlayer.world instanceof WorldServer && newEntityHealth > 2.0F) {
-						int k = (int)((double)newEntityHealth * 0.5D);
-						((WorldServer)entityPlayer.world).a(Particles.DAMAGE_INDICATOR, nmsEntity.locX, nmsEntity.locY + (entity.getHeight() * 0.5F), nmsEntity.locZ, k, 0.1D, 0.0D, 0.1D, 0.2D);
+						int k = (int) ((double) newEntityHealth * 0.5D);
+						((WorldServer) entityPlayer.world).a(EnumParticle.DAMAGE_INDICATOR, nmsEntity.locX, nmsEntity.locY + (double) (nmsEntity.length * 0.5F), nmsEntity.locZ, k, 0.1D, 0.0D, 0.1D, 0.2D, new int[0]);
 					}
 				}
 

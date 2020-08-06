@@ -9,17 +9,23 @@ import org.bukkit.craftbukkit.v1_16_R1.CraftWorld;
 import org.bukkit.craftbukkit.v1_16_R1.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.v1_16_R1.entity.CraftEntity;
 import org.bukkit.craftbukkit.v1_16_R1.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_16_R1.event.CraftEventFactory;
 import org.bukkit.craftbukkit.v1_16_R1.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.v1_16_R1.util.CraftVector;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityCombustByEntityEvent;
 import org.bukkit.event.player.PlayerVelocityEvent;
+import org.bukkit.inventory.meta.Damageable;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.material.MaterialData;
 import org.bukkit.util.Vector;
 
 import java.lang.reflect.Field;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Random;
 
 public class NMS_v1_16_R1 implements NMS {
 	@Override
@@ -52,12 +58,24 @@ public class NMS_v1_16_R1 implements NMS {
 		playerConnection.sendPacket(packetPlayOutBlockBreakAnimation);
 	}
 
+	@SuppressWarnings("deprecation")
+	@Override
+	public void blockCrackParticle(org.bukkit.block.Block block) {
+		MaterialData materialData = new MaterialData(block.getType(), block.getData());
+
+		block.getWorld().spawnParticle(org.bukkit.Particle.BLOCK_CRACK, block.getLocation().add(0.5, 0, 0.5), 10, materialData);
+	}
+
 	@Override
 	public float getToolStrength(org.bukkit.block.Block block, org.bukkit.inventory.ItemStack itemStack) {
-		ItemStack craftItemStack = CraftItemStack.asNMSCopy(itemStack);
-		Block nmsBlock = ((CraftBlockData) Bukkit.createBlockData(block.getType())).getState().getBlock();
+		if (itemStack.getType() != org.bukkit.Material.AIR) {
+			ItemStack craftItemStack = CraftItemStack.asNMSCopy(itemStack);
+			Block nmsBlock = ((CraftBlockData) Bukkit.createBlockData(block.getType())).getState().getBlock();
 
-		return craftItemStack.a(nmsBlock.getBlockData());
+			return craftItemStack.a(nmsBlock.getBlockData());
+		}
+
+		return 1;
 	}
 
 	@Override
@@ -70,14 +88,16 @@ public class NMS_v1_16_R1 implements NMS {
 
 	@Override
 	public double getAttackDamage(org.bukkit.inventory.ItemStack itemStack) {
-		ItemStack craftItemStack = CraftItemStack.asNMSCopy(itemStack);
-		Multimap<AttributeBase, AttributeModifier> attributeMultimap = craftItemStack.a(EnumItemSlot.MAINHAND);
+		if (itemStack.getType() != org.bukkit.Material.AIR) {
+			ItemStack craftItemStack = CraftItemStack.asNMSCopy(itemStack);
+			Multimap<AttributeBase, AttributeModifier> attributeMultimap = craftItemStack.a(EnumItemSlot.MAINHAND);
 
-		AttributeModifier attributeModifier = Iterables
-				.getFirst(attributeMultimap.get(GenericAttributes.ATTACK_DAMAGE), null);
+			AttributeModifier attributeModifier = Iterables
+					.getFirst(attributeMultimap.get(GenericAttributes.ATTACK_DAMAGE), null);
 
-		if (attributeModifier != null) {
-			return attributeModifier.getAmount() + 1;
+			if (attributeModifier != null) {
+				return attributeModifier.getAmount() + 1;
+			}
 		}
 
 		return 1;
@@ -92,11 +112,11 @@ public class NMS_v1_16_R1 implements NMS {
 
 			SoundEffect soundEffect = soundEffectType.g();
 			Field keyField = SoundEffect.class.getDeclaredField("b");
-
 			keyField.setAccessible(true);
-			MinecraftKey nmsString = (MinecraftKey) keyField.get(soundEffect);
 
-			String soundString = nmsString.getKey().toUpperCase()
+			MinecraftKey minecraftKey = (MinecraftKey) keyField.get(soundEffect);
+
+			String soundString = minecraftKey.getKey().toUpperCase()
 					.replace(".", "_")
 					.replace("_FALL", "_HIT");
 			Sound sound = Sound.valueOf(soundString);
@@ -108,6 +128,50 @@ public class NMS_v1_16_R1 implements NMS {
 		}
 
 		return Sound.BLOCK_STONE_HIT;
+	}
+
+	@Override
+	public float getBlockHardness(org.bukkit.block.Block block) {
+		Block nmsBlock = ((CraftBlockData) Bukkit.createBlockData(block.getType())).getState().getBlock();
+
+		return nmsBlock.getBlockData().strength;
+	}
+
+	@Override
+	public void damageItem(org.bukkit.inventory.ItemStack itemStack, Player player) {
+		if (itemStack.getItemMeta() instanceof Damageable && itemStack.getType().getMaxDurability() > 0 && calculateUnbreakingChance(itemStack)) {
+			Damageable damageable = (Damageable) itemStack.getItemMeta();
+
+			damageable.setDamage(damageable.getDamage() + 1);
+
+			itemStack.setItemMeta((ItemMeta) damageable);
+
+			if (damageable.getDamage() >= itemStack.getType().getMaxDurability()) {
+				ItemStack craftItemStack = CraftItemStack.asNMSCopy(itemStack);
+				EntityPlayer entityPlayer = ((CraftPlayer) player).getHandle();
+
+				CraftEventFactory.callPlayerItemBreakEvent(entityPlayer, craftItemStack);
+
+				itemStack.setAmount(0);
+				player.getWorld().playSound(player.getLocation(), Sound.ENTITY_ITEM_BREAK, 1, 1);
+			}
+		}
+	}
+
+	public boolean calculateUnbreakingChance(org.bukkit.inventory.ItemStack itemStack) {
+		int level = itemStack.getEnchantmentLevel(Enchantment.DURABILITY);
+
+		Random random = new Random();
+
+		if (level == 1) {
+			return random.nextFloat() <= 0.20f;
+		} else if (level == 2) {
+			return random.nextFloat() <= 0.27f;
+		} else if (level == 3) {
+			return random.nextFloat() <= 0.30f;
+		}
+
+		return true;
 	}
 
 	@Override

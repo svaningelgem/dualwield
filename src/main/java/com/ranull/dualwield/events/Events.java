@@ -8,6 +8,7 @@ import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
@@ -37,7 +38,7 @@ public class Events implements Listener {
 
                 // Get blockBreakData
                 if (!wieldManager.hasBreakData(block)) {
-                    blockBreakData = new BlockBreakData(block, player, itemInOffHand, new Random().nextInt(2000));
+                    blockBreakData = new BlockBreakData(block, wieldManager.getNMS().getBlockHardness(block), player, itemInOffHand, new Random().nextInt(2000));
 
                     wieldManager.addBreakData(blockBreakData);
                     wieldManager.runBlockBreakTask(blockBreakData);
@@ -52,7 +53,9 @@ public class Events implements Listener {
                     wieldManager.blockHitSound(blockBreakData);
                 } else {
                     // Item does not match
-                    wieldManager.blockCrackAnimation(blockBreakData, -1);
+                    for (Player nearbyPlayer : wieldManager.getNearbyPlayers(blockBreakData.getBlock().getLocation(), 20)) {
+                        wieldManager.blockCrackAnimation(blockBreakData, nearbyPlayer, -1);
+                    }
                     wieldManager.removeBreakData(blockBreakData);
                 }
             }
@@ -71,10 +74,12 @@ public class Events implements Listener {
         if (event.getHand() == EquipmentSlot.OFF_HAND) {
             Player player = event.getPlayer();
 
-            wieldManager.attackEntity(event.getPlayer(), event.getRightClicked());
+            wieldManager.getNMS().attackEntityOffHand(event.getPlayer(), event.getRightClicked());
 
             ItemStack itemInMainHand = player.getInventory().getItemInMainHand();
             ItemStack itemInOffHand = player.getInventory().getItemInOffHand();
+
+            wieldManager.getNMS().damageItem(itemInOffHand, player);
 
             // Hand animation
             if (itemInMainHand.getType() == Material.AIR && itemInOffHand.getType() == Material.AIR) {
@@ -83,5 +88,10 @@ public class Events implements Listener {
                 wieldManager.getNMS().offHandAnimation(player);
             }
         }
+    }
+
+    @EventHandler
+    public void e(EntityDamageByEntityEvent event) {
+        event.getDamager().sendMessage(event.getDamage() + "");
     }
 }

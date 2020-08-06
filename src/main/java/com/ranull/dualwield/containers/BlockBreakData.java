@@ -13,14 +13,14 @@ public class BlockBreakData {
     private long lastMineTime;
     private float hardness;
 
-    public BlockBreakData(Block block, Player player, ItemStack itemInOffHand, int animationID) {
+    public BlockBreakData(Block block, float hardness, Player player, ItemStack itemInOffHand, int animationID) {
         this.block = block;
         this.player = player;
         this.itemInOffHand = itemInOffHand;
         this.animationID = animationID;
         this.crackAmount = 0;
         this.lastMineTime = System.currentTimeMillis();
-        this.hardness = block.getType().getHardness();
+        this.hardness = hardness;
     }
 
     public Block getBlock() {
