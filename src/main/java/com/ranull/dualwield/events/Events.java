@@ -3,7 +3,6 @@ package com.ranull.dualwield.events;
 import com.ranull.dualwield.containers.BlockBreakData;
 import com.ranull.dualwield.managers.WieldManager;
 import org.bukkit.GameMode;
-import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -13,8 +12,6 @@ import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
-
-import java.util.Random;
 
 public class Events implements Listener {
     private WieldManager wieldManager;
@@ -28,12 +25,10 @@ public class Events implements Listener {
         Player player = event.getPlayer();
         ItemStack itemInOffHand = player.getInventory().getItemInOffHand();
 
-        if (player.hasPermission("dualwield.mine")
-                && itemInOffHand.getType() != Material.AIR
-                && event.getHand() == EquipmentSlot.OFF_HAND) {
+        if (player.hasPermission("dualwield.mine") && event.getHand() == EquipmentSlot.OFF_HAND) {
 
             if (event.getClickedBlock() != null
-                    && itemInOffHand.getType() != Material.AIR
+                    && itemInOffHand.getAmount() != 0
                     && player.getGameMode() == GameMode.SURVIVAL) {
                 Block block = event.getClickedBlock();
                 BlockBreakData blockBreakData;
@@ -74,7 +69,7 @@ public class Events implements Listener {
         Entity entity = event.getRightClicked();
 
         if (player.hasPermission("dualwield.attack")
-                && itemInOffHand.getType() != Material.AIR
+                && itemInOffHand.getAmount() != 0
                 && event.getHand() == EquipmentSlot.OFF_HAND
                 && player.getGameMode() != GameMode.SPECTATOR) {
 

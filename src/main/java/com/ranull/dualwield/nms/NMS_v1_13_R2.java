@@ -57,7 +57,7 @@ public class NMS_v1_13_R2 implements NMS {
 
 	@Override
 	public float getToolStrength(org.bukkit.block.Block block, org.bukkit.inventory.ItemStack itemStack) {
-		if (itemStack.getType() != org.bukkit.Material.AIR) {
+		if (itemStack.getAmount() != 0) {
 			ItemStack craftItemStack = CraftItemStack.asNMSCopy(itemStack);
 			Block nmsBlock = ((CraftBlockData) Bukkit.createBlockData(block.getType())).getState().getBlock();
 
@@ -76,8 +76,16 @@ public class NMS_v1_13_R2 implements NMS {
 	}
 
 	@Override
+	public void setItemInOffHand(Player player, org.bukkit.inventory.ItemStack itemStack) {
+		EntityPlayer entityPlayer = ((CraftPlayer) player).getHandle();
+		ItemStack craftItemStack = CraftItemStack.asNMSCopy(itemStack);
+
+		entityPlayer.setSlot(EnumItemSlot.OFFHAND, craftItemStack);
+	}
+
+	@Override
 	public double getAttackDamage(org.bukkit.inventory.ItemStack itemStack) {
-		if (itemStack.getType() != org.bukkit.Material.AIR) {
+		if (itemStack.getAmount() != 0) {
 			ItemStack craftItemStack = CraftItemStack.asNMSCopy(itemStack);
 			Multimap<String, AttributeModifier> attributeMultimap = craftItemStack.a(EnumItemSlot.MAINHAND);
 
@@ -128,17 +136,18 @@ public class NMS_v1_13_R2 implements NMS {
 
 	@Override
 	public void damageItem(org.bukkit.inventory.ItemStack itemStack, Player player) {
-		if (itemStack.getItemMeta() instanceof Damageable && itemStack.getType().getMaxDurability() > 0 && calculateUnbreakingChance(itemStack)) {
-			Damageable damageable = (Damageable) itemStack.getItemMeta();
+		ItemStack craftItemStack = CraftItemStack.asNMSCopy(itemStack);
 
+		if (itemStack.getItemMeta() instanceof Damageable
+				&& craftItemStack.getItem().getMaxDurability() > 0
+				&& calculateUnbreakingChance(itemStack)) {
+			Damageable damageable = (Damageable) itemStack.getItemMeta();
 			damageable.setDamage(damageable.getDamage() + 1);
 
 			itemStack.setItemMeta((ItemMeta) damageable);
 
-			if (damageable.getDamage() >= itemStack.getType().getMaxDurability()) {
-				ItemStack craftItemStack = CraftItemStack.asNMSCopy(itemStack);
+			if (damageable.getDamage() >= craftItemStack.getItem().getMaxDurability()) {
 				EntityPlayer entityPlayer = ((CraftPlayer) player).getHandle();
-
 				CraftEventFactory.callPlayerItemBreakEvent(entityPlayer, craftItemStack);
 
 				itemStack.setAmount(0);
@@ -198,7 +207,7 @@ public class NMS_v1_13_R2 implements NMS {
 		EntityPlayer entityPlayer = ((CraftPlayer) player).getHandle();
 		Entity nmsEntity = ((CraftEntity) entity).getHandle();
 
-		org.bukkit.inventory.ItemStack itemInOffHand = player.getInventory().getItemInOffHand();
+		org.bukkit.inventory.ItemStack itemInOffHand = player.getInventory().getItemInMainHand();
 		ItemStack craftItemInOffHand = CraftItemStack.asNMSCopy(itemInOffHand);
 
 		float damage = (float) getAttackDamage(itemInOffHand);
@@ -273,8 +282,8 @@ public class NMS_v1_13_R2 implements NMS {
 			double vectorX = nmsEntity.motX;
 			double vectorY = nmsEntity.motY;
 			double vectorZ = nmsEntity.motZ;
-			boolean flag5 = nmsEntity.damageEntity(DamageSource.playerAttack(entityPlayer), damage);
-			if (flag5) {
+			boolean didDamage = nmsEntity.damageEntity(DamageSource.playerAttack(entityPlayer), damage);
+			if (didDamage) {
 				if (enchantmentCounter > 0) {
 					if (nmsEntity instanceof EntityLiving) {
 						((EntityLiving)nmsEntity).a(entityPlayer, (float)enchantmentCounter * 0.5F, MathHelper.sin(entityPlayer.yaw * 0.017453292F), (-MathHelper.cos(entityPlayer.yaw * 0.017453292F)));

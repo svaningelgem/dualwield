@@ -160,38 +160,52 @@ public class WieldManager {
     public void breakBlockOffHand(BlockBreakData blockBreakData) {
         Player player = blockBreakData.getPlayer();
 
-        ItemStack itemInMainHand = player.getInventory().getItemInMainHand().clone();
-        ItemStack itemInOffHand = nms.setAPIData(player.getInventory().getItemInOffHand().clone());
-
-        nms.setItemInMainHand(player, itemInOffHand);
+        swapHands(player, true);
 
         BlockBreakEvent blockBreakEvent = new BlockBreakEvent(blockBreakData.getBlock(), blockBreakData.getPlayer());
         plugin.getServer().getPluginManager().callEvent(blockBreakEvent);
 
-        nms.setItemInMainHand(player, itemInMainHand);
-        player.updateInventory();
-
         if (!blockBreakEvent.isCancelled()) {
-            nms.damageItem(blockBreakData.getItemInOffHand(), player);
+            nms.damageItem(player.getInventory().getItemInMainHand(), player);
 
             blockBreakData.getBlock().getWorld().playEffect(blockBreakData.getBlock().getLocation(),
                     Effect.STEP_SOUND, blockBreakData.getBlock().getType());
 
             blockBreakData.getBlock().breakNaturally(blockBreakData.getItemInOffHand());
         }
+
+        swapHands(player);
+
+        player.updateInventory();
     }
 
     public void attackEntityOffHand(Player player, Entity entity) {
-        ItemStack itemInMainHand = player.getInventory().getItemInMainHand().clone();
-        ItemStack itemInOffHand = nms.setAPIData(player.getInventory().getItemInOffHand().clone());
-
-        nms.setItemInMainHand(player, itemInOffHand);
+        swapHands(player, true);
 
         nms.attackEntityOffHand(player, entity);
-        nms.damageItem(itemInOffHand, player);
+        nms.damageItem(player.getInventory().getItemInMainHand(), player);
 
-        nms.setItemInMainHand(player, itemInMainHand);
+        swapHands(player);
+
         player.updateInventory();
+    }
+
+    public void swapHands(Player player) {
+        swapHands(player, false);
+    }
+
+    public void swapHands(Player player, boolean apiData) {
+        ItemStack itemInMainHand = player.getInventory().getItemInMainHand().clone();
+        ItemStack itemInOffHand = player.getInventory().getItemInOffHand().clone();
+
+        if (apiData) {
+            itemInOffHand = nms.setAPIData(itemInOffHand);
+        } else {
+            itemInMainHand = nms.removeAPIData(itemInMainHand);
+        }
+
+        nms.setItemInMainHand(player, itemInOffHand);
+        nms.setItemInOffHand(player, itemInMainHand);
     }
 
     public void blockHitSound(BlockBreakData blockBreakData) {

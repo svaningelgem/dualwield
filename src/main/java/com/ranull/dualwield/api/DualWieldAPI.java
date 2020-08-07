@@ -40,8 +40,20 @@ public class DualWieldAPI {
         return false;
     }
 
-    public ItemStack removeAPIData(ItemStack itemStack) {
-        return nms.removeAPIData(itemStack);
+    public ItemStack getItemInMainHand(Player player) {
+        return nms.removeAPIData(player.getInventory().getItemInOffHand().clone());
+    }
+
+    public void setItemInMainHand(Player player, ItemStack itemStack) {
+        player.getInventory().setItemInOffHand(nms.setAPIData(itemStack));
+    }
+
+    public ItemStack getItemInOffHand(Player player) {
+        return player.getInventory().getItemInMainHand().clone();
+    }
+
+    public void setItemInOffHand(Player player, ItemStack itemStack) {
+        player.getInventory().setItemInMainHand(itemStack);
     }
 
     public WieldManager getWieldManager() {

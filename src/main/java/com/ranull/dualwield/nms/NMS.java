@@ -17,6 +17,8 @@ public interface NMS {
 
     void setItemInMainHand(Player player, ItemStack itemStack);
 
+    void setItemInOffHand(Player player, ItemStack itemStack);
+
     void attackEntityOffHand(Player player, Entity entity);
 
     void damageItem(ItemStack itemStack, Player player);
