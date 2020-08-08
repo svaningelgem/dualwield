@@ -7,6 +7,7 @@ import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -20,16 +21,20 @@ public class Events implements Listener {
         this.wieldManager = wieldManager;
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerInteract(PlayerInteractEvent event) {
         Player player = event.getPlayer();
         ItemStack itemInOffHand = player.getInventory().getItemInOffHand();
 
-        if (player.hasPermission("dualwield.mine") && event.getHand() == EquipmentSlot.OFF_HAND) {
+        if (player.hasPermission("dualwield.mine")
+                && player.getGameMode() == GameMode.SURVIVAL
+                && event.getHand() == EquipmentSlot.OFF_HAND) {
 
-            if (event.getClickedBlock() != null
+            if (!event.isCancelled()
+                    && event.getClickedBlock() != null
                     && itemInOffHand.getAmount() != 0
                     && player.getGameMode() == GameMode.SURVIVAL) {
+
                 Block block = event.getClickedBlock();
                 BlockBreakData blockBreakData;
 
@@ -62,13 +67,14 @@ public class Events implements Listener {
         }
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerInteractEntity(PlayerInteractEntityEvent event) {
         Player player = event.getPlayer();
         ItemStack itemInOffHand = player.getInventory().getItemInOffHand();
         Entity entity = event.getRightClicked();
 
-        if (player.hasPermission("dualwield.attack")
+        if (!event.isCancelled()
+                && player.hasPermission("dualwield.attack")
                 && itemInOffHand.getAmount() != 0
                 && event.getHand() == EquipmentSlot.OFF_HAND
                 && player.getGameMode() != GameMode.SPECTATOR) {

@@ -6,7 +6,6 @@ import net.minecraft.server.v1_13_R2.*;
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.craftbukkit.v1_13_R2.CraftWorld;
-import org.bukkit.craftbukkit.v1_13_R2.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.v1_13_R2.entity.CraftEntity;
 import org.bukkit.craftbukkit.v1_13_R2.entity.CraftPlayer;
 import org.bukkit.craftbukkit.v1_13_R2.event.CraftEventFactory;
@@ -59,7 +58,8 @@ public class NMS_v1_13_R2 implements NMS {
 	public float getToolStrength(org.bukkit.block.Block block, org.bukkit.inventory.ItemStack itemStack) {
 		if (itemStack.getAmount() != 0) {
 			ItemStack craftItemStack = CraftItemStack.asNMSCopy(itemStack);
-			Block nmsBlock = ((CraftBlockData) Bukkit.createBlockData(block.getType())).getState().getBlock();
+			World nmsWorld = ((CraftWorld) block.getWorld()).getHandle();
+			Block nmsBlock = nmsWorld.getType(new BlockPosition(block.getX(), block.getY(), block.getZ())).getBlock();
 
 			return craftItemStack.a(nmsBlock.getBlockData());
 		}
@@ -129,7 +129,8 @@ public class NMS_v1_13_R2 implements NMS {
 
 	@Override
 	public float getBlockHardness(org.bukkit.block.Block block) {
-		Block nmsBlock = ((CraftBlockData) Bukkit.createBlockData(block.getType())).getState().getBlock();
+		World nmsWorld = ((CraftWorld) block.getWorld()).getHandle();
+		Block nmsBlock = nmsWorld.getType(new BlockPosition(block.getX(), block.getY(), block.getZ())).getBlock();
 
 		return nmsBlock.strength;
 	}
