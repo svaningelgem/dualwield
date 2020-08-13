@@ -9,6 +9,7 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.player.PlayerItemDamageEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -183,7 +184,17 @@ public class WieldManager {
         swapHands(player, true);
 
         nms.attackEntityOffHand(player, entity);
-        nms.damageItem(player.getInventory().getItemInMainHand(), player);
+
+        ItemStack itemStack = player.getInventory().getItemInMainHand();
+        PlayerItemDamageEvent playerItemDamageEvent = new PlayerItemDamageEvent(player, itemStack, 1);
+
+        plugin.getServer().getPluginManager().callEvent(playerItemDamageEvent);
+
+        if (!playerItemDamageEvent.isCancelled()) {
+            if (player.getGameMode() != GameMode.CREATIVE) {
+                nms.damageItem(itemStack, player);
+            }
+        }
 
         swapHands(player);
 
