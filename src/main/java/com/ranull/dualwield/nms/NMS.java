@@ -23,11 +23,11 @@ public interface NMS {
 
     void damageItem(ItemStack itemStack, Player player);
 
-    ItemStack setAPIData(ItemStack itemStack);
+    ItemStack addNBTKey(ItemStack itemStack, String key);
 
-    ItemStack removeAPIData(ItemStack itemStack);
+    ItemStack removeNBTKey(ItemStack itemStack, String key);
 
-    boolean hasAPIData(ItemStack itemStack);
+    boolean hasNBTKey(ItemStack itemStack, String key);
 
     double getAttackDamage(ItemStack itemStack);
 

@@ -1,4 +1,4 @@
-package com.ranull.dualwield.containers;
+package com.ranull.dualwield.data;
 
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;

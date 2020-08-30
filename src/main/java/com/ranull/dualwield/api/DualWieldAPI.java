@@ -20,7 +20,7 @@ public class DualWieldAPI {
         Player player = blockBreakEvent.getPlayer();
         ItemStack itemStack = player.getInventory().getItemInMainHand();
 
-        if (nms.hasAPIData(itemStack)) {
+        if (nms.hasNBTKey(itemStack, "dualWieldItem")) {
             return true;
         }
 
@@ -32,7 +32,7 @@ public class DualWieldAPI {
             Player player = (Player) entityDamageByEntityEvent.getDamager();
             ItemStack itemStack = player.getInventory().getItemInMainHand();
 
-            if (nms.hasAPIData(itemStack)) {
+            if (nms.hasNBTKey(itemStack, "dualWieldItem")) {
                 return true;
             }
         }
@@ -41,11 +41,11 @@ public class DualWieldAPI {
     }
 
     public ItemStack getItemInMainHand(Player player) {
-        return nms.removeAPIData(player.getInventory().getItemInOffHand().clone());
+        return nms.removeNBTKey(player.getInventory().getItemInOffHand().clone(), "dualWieldItem");
     }
 
     public void setItemInMainHand(Player player, ItemStack itemStack) {
-        player.getInventory().setItemInOffHand(nms.setAPIData(itemStack));
+        player.getInventory().setItemInOffHand(nms.addNBTKey(itemStack, "dualWieldItem"));
     }
 
     public ItemStack getItemInOffHand(Player player) {

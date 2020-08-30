@@ -1,7 +1,7 @@
 package com.ranull.dualwield.managers;
 
 import com.ranull.dualwield.DualWield;
-import com.ranull.dualwield.containers.BlockBreakData;
+import com.ranull.dualwield.data.BlockBreakData;
 import com.ranull.dualwield.nms.NMS;
 import org.bukkit.*;
 import org.bukkit.block.Block;
@@ -38,6 +38,7 @@ public class WieldManager {
             for (Player nearbyPlayer : nearbyPlayers) {
                 blockCrackAnimation(blockBreakData, nearbyPlayer);
             }
+
             breakBlockOffHand(blockBreakData);
         } else if (blockHardness > 0.0) {
             // Timed break tool
@@ -87,12 +88,14 @@ public class WieldManager {
                             for (Player nearbyPlayer : nearbyPlayers) {
                                 blockCrackAnimation(blockBreakData, nearbyPlayer);
                             }
+
                             blockBreakData.addCrackAmount();
                         } else {
                             // Cancel because player stopped mining
                             for (Player nearbyPlayer : nearbyPlayers) {
                                 blockCrackAnimation(blockBreakData, nearbyPlayer, -1);
                             }
+
                             removeBreakData(blockBreakData);
 
                             // Cancel runnable
@@ -167,7 +170,9 @@ public class WieldManager {
         plugin.getServer().getPluginManager().callEvent(blockBreakEvent);
 
         if (!blockBreakEvent.isCancelled()) {
-            nms.damageItem(player.getInventory().getItemInMainHand(), player);
+            if (!nms.hasNBTKey(player.getInventory().getItemInMainHand(), "Unbreakable")) {
+                nms.damageItem(player.getInventory().getItemInMainHand(), player);
+            }
 
             blockBreakData.getBlock().getWorld().playEffect(blockBreakData.getBlock().getLocation(),
                     Effect.STEP_SOUND, blockBreakData.getBlock().getType());
@@ -191,7 +196,8 @@ public class WieldManager {
         plugin.getServer().getPluginManager().callEvent(playerItemDamageEvent);
 
         if (!playerItemDamageEvent.isCancelled()) {
-            if (player.getGameMode() != GameMode.CREATIVE) {
+            if (!nms.hasNBTKey(player.getInventory().getItemInMainHand(), "Unbreakable")
+                    && player.getGameMode() != GameMode.CREATIVE) {
                 nms.damageItem(itemStack, player);
             }
         }
@@ -210,9 +216,9 @@ public class WieldManager {
         ItemStack itemInOffHand = player.getInventory().getItemInOffHand().clone();
 
         if (apiData) {
-            itemInOffHand = nms.setAPIData(itemInOffHand);
+            itemInOffHand = nms.addNBTKey(itemInOffHand, "dualWieldItem");
         } else {
-            itemInMainHand = nms.removeAPIData(itemInMainHand);
+            itemInMainHand = nms.removeNBTKey(itemInMainHand, "dualWieldItem");
         }
 
         nms.setItemInMainHand(player, itemInOffHand);

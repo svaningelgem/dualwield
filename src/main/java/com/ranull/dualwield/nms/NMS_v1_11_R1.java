@@ -171,33 +171,33 @@ public class NMS_v1_11_R1 implements NMS {
 	}
 
 	@Override
-	public org.bukkit.inventory.ItemStack setAPIData(org.bukkit.inventory.ItemStack itemStack) {
+	public org.bukkit.inventory.ItemStack addNBTKey(org.bukkit.inventory.ItemStack itemStack, String key) {
 		ItemStack craftItemStack = CraftItemStack.asNMSCopy(itemStack);
 		NBTTagCompound nbtTagCompound = (craftItemStack.hasTag()) ? craftItemStack.getTag() : new NBTTagCompound();
 
-		nbtTagCompound.set("dualWieldItem", new NBTTagInt(1));
+		nbtTagCompound.set(key, new NBTTagByte((byte) 1));
 		craftItemStack.setTag(nbtTagCompound);
 
 		return CraftItemStack.asBukkitCopy(craftItemStack);
 	}
 
 	@Override
-	public org.bukkit.inventory.ItemStack removeAPIData(org.bukkit.inventory.ItemStack itemStack) {
+	public org.bukkit.inventory.ItemStack removeNBTKey(org.bukkit.inventory.ItemStack itemStack, String key) {
 		ItemStack craftItemStack = CraftItemStack.asNMSCopy(itemStack);
 		NBTTagCompound nbtTagCompound = (craftItemStack.hasTag()) ? craftItemStack.getTag() : new NBTTagCompound();
 
-		nbtTagCompound.remove("dualWieldItem");
+		nbtTagCompound.remove(key);
 		craftItemStack.setTag(nbtTagCompound);
 
 		return CraftItemStack.asBukkitCopy(craftItemStack);
 	}
 
 	@Override
-	public boolean hasAPIData(org.bukkit.inventory.ItemStack itemStack) {
+	public boolean hasNBTKey(org.bukkit.inventory.ItemStack itemStack, String key) {
 		ItemStack craftItemStack = CraftItemStack.asNMSCopy(itemStack);
 		NBTTagCompound nbtTagCompound = (craftItemStack.hasTag()) ? craftItemStack.getTag() : new NBTTagCompound();
 
-		return nbtTagCompound.hasKey("dualWieldItem");
+		return nbtTagCompound.hasKey(key);
 	}
 
 	@Override

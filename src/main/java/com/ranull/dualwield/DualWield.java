@@ -1,7 +1,8 @@
 package com.ranull.dualwield;
 
 import com.ranull.dualwield.api.DualWieldAPI;
-import com.ranull.dualwield.events.Events;
+import com.ranull.dualwield.listeners.PlayerInteractEntityListener;
+import com.ranull.dualwield.listeners.PlayerInteractListener;
 import com.ranull.dualwield.managers.WieldManager;
 import com.ranull.dualwield.nms.*;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -12,15 +13,16 @@ public final class DualWield extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        if (!setupNMS()) {
+        if (setupNMS()) {
+            WieldManager wieldManager = new WieldManager(this, nms);
+            dualWieldAPI = new DualWieldAPI(wieldManager, nms);
+
+            getServer().getPluginManager().registerEvents(new PlayerInteractListener(wieldManager), this);
+            getServer().getPluginManager().registerEvents(new PlayerInteractEntityListener(wieldManager), this);
+        } else {
             getLogger().severe("Version not supported, disabling plugin!");
             getServer().getPluginManager().disablePlugin(this);
         }
-
-        WieldManager wieldManager = new WieldManager(this, nms);
-        dualWieldAPI = new DualWieldAPI(wieldManager, nms);
-
-        getServer().getPluginManager().registerEvents(new Events(wieldManager), this);
     }
 
     private boolean setupNMS() {
