@@ -190,7 +190,7 @@ public class NMS_v1_16_R2 implements NMS {
 		ItemStack craftItemStack = CraftItemStack.asNMSCopy(itemStack);
 		NBTTagCompound nbtTagCompound = (craftItemStack.hasTag()) ? craftItemStack.getTag() : new NBTTagCompound();
 
-		nbtTagCompound.remove("dualWieldItem");
+		nbtTagCompound.remove(key);
 		craftItemStack.setTag(nbtTagCompound);
 
 		return CraftItemStack.asBukkitCopy(craftItemStack);
@@ -201,7 +201,14 @@ public class NMS_v1_16_R2 implements NMS {
 		ItemStack craftItemStack = CraftItemStack.asNMSCopy(itemStack);
 		NBTTagCompound nbtTagCompound = (craftItemStack.hasTag()) ? craftItemStack.getTag() : new NBTTagCompound();
 
-		return nbtTagCompound.hasKey("dualWieldItem");
+		return nbtTagCompound.hasKey(key);
+	}
+
+	@Override
+	public String getItemName(org.bukkit.inventory.ItemStack itemStack) {
+		ItemStack craftItemStack = CraftItemStack.asNMSCopy(itemStack);
+
+		return craftItemStack.j().replace("item.minecraft.", "").toUpperCase();
 	}
 
 	@Override

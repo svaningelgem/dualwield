@@ -29,6 +29,8 @@ public interface NMS {
 
     boolean hasNBTKey(ItemStack itemStack, String key);
 
+    String getItemName(ItemStack itemStack);
+
     double getAttackDamage(ItemStack itemStack);
 
     Sound getBreakSound(Block block);

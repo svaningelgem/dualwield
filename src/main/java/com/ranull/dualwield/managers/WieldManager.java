@@ -19,10 +19,14 @@ public class WieldManager {
     private final DualWield plugin;
     private final NMS nms;
     private final Map<Block, BlockBreakData> blockBreakDataList = new HashMap<>();
+    List<String> weaponNameList = new ArrayList<>();
 
     public WieldManager(DualWield plugin, NMS nms) {
         this.plugin = plugin;
         this.nms = nms;
+
+        addNewWeaponMaterialsToList(weaponNameList);
+        addOldWeaponMaterialsToList(weaponNameList);
     }
 
     public NMS getNMS() {
@@ -205,6 +209,94 @@ public class WieldManager {
         swapHands(player);
 
         player.updateInventory();
+    }
+
+    public boolean isWeapon(ItemStack itemStack) {
+        if (weaponNameList.contains(nms.getItemName(itemStack))) {
+            return true;
+        }
+
+        return false;
+    }
+
+    public void addNewWeaponMaterialsToList(List<String> weaponNameList) {
+        // Sword
+        weaponNameList.add("WOODEN_SWORD");
+        weaponNameList.add("STONE_SWORD");
+        weaponNameList.add("GOLDEN_SWORD");
+        weaponNameList.add("IRON_SWORD");
+        weaponNameList.add("DIAMOND_SWORD");
+        weaponNameList.add("NETHERITE_SWORD");
+        weaponNameList.add("TRIDENT");
+
+        // Axe
+        weaponNameList.add("WOODEN_AXE");
+        weaponNameList.add("STONE_AXE");
+        weaponNameList.add("GOLDEN_AXE");
+        weaponNameList.add("IRON_AXE");
+        weaponNameList.add("DIAMOND_AXE");
+        weaponNameList.add("NETHERITE_AXE");
+
+        // Pickaxe
+        weaponNameList.add("WOODEN_PICKAXE");
+        weaponNameList.add("STONE_PICKAXE");
+        weaponNameList.add("GOLDEN_PICKAXE");
+        weaponNameList.add("IRON_PICKAXE");
+        weaponNameList.add("DIAMOND_PICKAXE");
+        weaponNameList.add("NETHERITE_PICKAXE");
+
+        // Shovel
+        weaponNameList.add("WOODEN_SHOVEL");
+        weaponNameList.add("STONE_SHOVEL");
+        weaponNameList.add("GOLDEN_SHOVEL");
+        weaponNameList.add("IRON_SHOVEL");
+        weaponNameList.add("DIAMOND_SHOVEL");
+        weaponNameList.add("NETHERITE_SHOVEL");
+
+        // Hoe
+        weaponNameList.add("WOODEN_HOE");
+        weaponNameList.add("STONE_HOE");
+        weaponNameList.add("GOLDEN_HOE");
+        weaponNameList.add("IRON_HOE");
+        weaponNameList.add("DIAMOND_HOE");
+        weaponNameList.add("NETHERITE_HOE");
+    }
+
+    public void addOldWeaponMaterialsToList(List<String> weaponNameList) {
+        // Sword
+        weaponNameList.add("SWORDWOOD");
+        weaponNameList.add("SWORDSTONE");
+        weaponNameList.add("SWORDGOLD");
+        weaponNameList.add("SWORDIRON");
+        weaponNameList.add("SWORDDIAMOND");
+
+        // Axe
+        weaponNameList.add("HATCHETWOOD");
+        weaponNameList.add("HATCHETSTONE");
+        weaponNameList.add("HATCHETGOLD");
+        weaponNameList.add("HATCHETIRON");
+        weaponNameList.add("HATCHETDIAMOND");
+
+        // Pickaxe
+        weaponNameList.add("PICKAXEWOOD");
+        weaponNameList.add("PICKAXESTONE");
+        weaponNameList.add("PICKAXEGOLD");
+        weaponNameList.add("PICKAXEIRON");
+        weaponNameList.add("PICKAXEDIAMOND");
+
+        // Shovel
+        weaponNameList.add("SHOVELWOOD");
+        weaponNameList.add("SHOVELSTONE");
+        weaponNameList.add("SHOVELGOLD");
+        weaponNameList.add("SHOVELIRON");
+        weaponNameList.add("SHOVELDIAMOND");
+
+        // Hoe
+        weaponNameList.add("HOEWOOD");
+        weaponNameList.add("HOESTONE");
+        weaponNameList.add("HOEGOLD");
+        weaponNameList.add("HOEIRON");
+        weaponNameList.add("HOEDIAMOND");
     }
 
     public void swapHands(Player player) {

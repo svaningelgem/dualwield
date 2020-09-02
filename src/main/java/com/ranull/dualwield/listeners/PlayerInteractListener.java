@@ -24,7 +24,10 @@ public class PlayerInteractListener implements Listener {
         Player player = event.getPlayer();
         ItemStack itemInOffHand = player.getInventory().getItemInOffHand();
 
-        if (player.hasPermission("dualwield.mine")
+        if (!event.isCancelled()
+                && event.getClickedBlock() != null
+                && itemInOffHand.getAmount() != 0
+                && player.hasPermission("dualwield.mine")
                 && player.getGameMode() == GameMode.SURVIVAL
                 && event.getHand() == EquipmentSlot.OFF_HAND) {
 
@@ -57,6 +60,7 @@ public class PlayerInteractListener implements Listener {
                             .getBlock().getLocation(), 20)) {
                         wieldManager.blockCrackAnimation(blockBreakData, nearbyPlayer, -1);
                     }
+
                     wieldManager.removeBreakData(blockBreakData);
                 }
             }

@@ -201,6 +201,13 @@ public class NMS_v1_10_R1 implements NMS {
 	}
 
 	@Override
+	public String getItemName(org.bukkit.inventory.ItemStack itemStack) {
+		ItemStack craftItemStack = CraftItemStack.asNMSCopy(itemStack);
+
+		return craftItemStack.a().replace("item.", "").toUpperCase();
+	}
+
+	@Override
 	public void attackEntityOffHand(Player player, org.bukkit.entity.Entity entity) {
 		EntityPlayer entityPlayer = ((CraftPlayer) player).getHandle();
 		Entity nmsEntity = ((CraftEntity) entity).getHandle();

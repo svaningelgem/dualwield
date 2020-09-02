@@ -28,8 +28,8 @@ public class PlayerInteractEntityListener implements Listener {
                 && player.hasPermission("dualwield.attack")
                 && itemInOffHand.getAmount() != 0
                 && event.getHand() == EquipmentSlot.OFF_HAND
-                && player.getGameMode() != GameMode.SPECTATOR) {
-
+                && player.getGameMode() != GameMode.SPECTATOR
+                && wieldManager.isWeapon(itemInOffHand)) {
             wieldManager.attackEntityOffHand(player, entity);
             wieldManager.getNMS().offHandAnimation(player);
         }
