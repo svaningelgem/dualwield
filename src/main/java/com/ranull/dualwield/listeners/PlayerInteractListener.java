@@ -19,50 +19,43 @@ public class PlayerInteractListener implements Listener {
         this.wieldManager = wieldManager;
     }
 
-    @EventHandler(priority = EventPriority.MONITOR)
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerInteract(PlayerInteractEvent event) {
         Player player = event.getPlayer();
         ItemStack itemInOffHand = player.getInventory().getItemInOffHand();
 
-        if (!event.isCancelled()
+        if (player.hasPermission("dualwield.mine")
                 && event.getClickedBlock() != null
                 && itemInOffHand.getAmount() != 0
-                && player.hasPermission("dualwield.mine")
+                && event.getHand() == EquipmentSlot.OFF_HAND
                 && player.getGameMode() == GameMode.SURVIVAL
-                && event.getHand() == EquipmentSlot.OFF_HAND) {
+                && wieldManager.isValidItem(itemInOffHand)) {
+            Block block = event.getClickedBlock();
+            BlockBreakData blockBreakData;
 
-            if (!event.isCancelled()
-                    && event.getClickedBlock() != null
-                    && itemInOffHand.getAmount() != 0
-                    && player.getGameMode() == GameMode.SURVIVAL) {
+            // Get blockBreakData
+            if (!wieldManager.hasBreakData(block)) {
+                blockBreakData = wieldManager.createBlockBreakData(block, player, itemInOffHand);
 
-                Block block = event.getClickedBlock();
-                BlockBreakData blockBreakData;
+                wieldManager.addBreakData(blockBreakData);
+                wieldManager.runBlockBreakTask(blockBreakData);
+            } else {
+                blockBreakData = wieldManager.getBreakData(block);
+            }
 
-                // Get blockBreakData
-                if (!wieldManager.hasBreakData(block)) {
-                    blockBreakData = wieldManager.createBlockBreakData(block, player, itemInOffHand);
-
-                    wieldManager.addBreakData(blockBreakData);
-                    wieldManager.runBlockBreakTask(blockBreakData);
-                } else {
-                    blockBreakData = wieldManager.getBreakData(block);
+            // Update mining data
+            if (blockBreakData.getItemInOffHand().equals(itemInOffHand)) {
+                // Item matches
+                blockBreakData.updateLastMineTime();
+                wieldManager.blockHitSound(blockBreakData);
+            } else {
+                // Item does not match
+                for (Player nearbyPlayer : wieldManager.getNearbyPlayers(blockBreakData
+                        .getBlock().getLocation(), 20)) {
+                    wieldManager.blockCrackAnimation(blockBreakData, nearbyPlayer, -1);
                 }
 
-                // Update mining data
-                if (blockBreakData.getItemInOffHand().equals(itemInOffHand)) {
-                    // Item matches
-                    blockBreakData.updateLastMineTime();
-                    wieldManager.blockHitSound(blockBreakData);
-                } else {
-                    // Item does not match
-                    for (Player nearbyPlayer : wieldManager.getNearbyPlayers(blockBreakData
-                            .getBlock().getLocation(), 20)) {
-                        wieldManager.blockCrackAnimation(blockBreakData, nearbyPlayer, -1);
-                    }
-
-                    wieldManager.removeBreakData(blockBreakData);
-                }
+                wieldManager.removeBreakData(blockBreakData);
             }
 
             wieldManager.getNMS().offHandAnimation(player);

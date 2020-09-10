@@ -11,6 +11,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.player.PlayerItemDamageEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.*;
@@ -19,14 +20,14 @@ public class WieldManager {
     private final DualWield plugin;
     private final NMS nms;
     private final Map<Block, BlockBreakData> blockBreakDataList = new HashMap<>();
-    List<String> weaponNameList = new ArrayList<>();
+    List<String> itemNameList = new ArrayList<>();
 
     public WieldManager(DualWield plugin, NMS nms) {
         this.plugin = plugin;
         this.nms = nms;
 
-        addNewWeaponMaterialsToList(weaponNameList);
-        addOldWeaponMaterialsToList(weaponNameList);
+        addNewItemMaterialsToList(itemNameList);
+        addOldItemMaterialsToList(itemNameList);
     }
 
     public NMS getNMS() {
@@ -47,23 +48,20 @@ public class WieldManager {
         } else if (blockHardness > 0.0) {
             // Timed break tool
             float toolStrength = nms.getToolStrength(blockBreakData.getBlock(), blockBreakData.getItemInOffHand());
-
-            // Base timer
             float timer = (blockBreakData.getHardness() / (toolStrength * 6)) * 20;
-
             int crackAmount = 10;
 
             if (toolStrength > 1) {
-                // Correct tool enchantment check
-                if (blockBreakData.getItemInOffHand().hasItemMeta()
-                        && blockBreakData.getItemInOffHand().getItemMeta().hasEnchant(Enchantment.DIG_SPEED)) {
-                    int enchantmentLevel = blockBreakData.getItemInOffHand().getItemMeta().getEnchantLevel(Enchantment.DIG_SPEED);
-                    int enchantmentLevelCounter = 0;
+                // Correct tool
+                if (blockBreakData.getItemInOffHand().hasItemMeta()) {
+                    // Enchantment buff
+                    if (blockBreakData.getItemInOffHand().getItemMeta().hasEnchant(Enchantment.DIG_SPEED)) {
+                        crackAmount -= blockBreakData.getItemInOffHand().getItemMeta().getEnchantLevel(Enchantment.DIG_SPEED);
+                    }
 
-                    // For each enchantment level subtract 1 from the required cracks to break a block
-                    while (enchantmentLevelCounter <= enchantmentLevel) {
-                        crackAmount--;
-                        enchantmentLevelCounter++;
+                    // Haste buff
+                    if (blockBreakData.getPlayer().hasPotionEffect(PotionEffectType.FAST_DIGGING)) {
+                        crackAmount -= blockBreakData.getPlayer().getPotionEffect(PotionEffectType.FAST_DIGGING).getAmplifier();
                     }
                 }
             } else {
@@ -71,14 +69,19 @@ public class WieldManager {
                 timer = timer * (blockBreakData.getHardness() * 2);
             }
 
+            // Mining fatigue debuff
+            if (blockBreakData.getPlayer().hasPotionEffect(PotionEffectType.SLOW_DIGGING)) {
+                timer *= (blockBreakData.getPlayer().getPotionEffect(PotionEffectType.SLOW_DIGGING).getAmplifier() * 15);
+            }
+
             // Swimming debuff
             if (blockBreakData.getPlayer().getLocation().add(0, 1, 0).getBlock().getType().equals(Material.WATER)) {
-                timer = timer * 5;
+                timer *= 5;
             }
 
             // Vehicle debuff
             if (blockBreakData.getPlayer().getVehicle() != null) {
-                timer = timer * 5;
+                timer *= 5;
             }
 
             int finalCrackAmount = crackAmount;
@@ -211,92 +214,92 @@ public class WieldManager {
         player.updateInventory();
     }
 
-    public boolean isWeapon(ItemStack itemStack) {
-        if (weaponNameList.contains(nms.getItemName(itemStack))) {
+    public boolean isValidItem(ItemStack itemStack) {
+        if (itemNameList.contains(nms.getItemName(itemStack))) {
             return true;
         }
 
         return false;
     }
 
-    public void addNewWeaponMaterialsToList(List<String> weaponNameList) {
+    public void addNewItemMaterialsToList(List<String> itemNameList) {
         // Sword
-        weaponNameList.add("WOODEN_SWORD");
-        weaponNameList.add("STONE_SWORD");
-        weaponNameList.add("GOLDEN_SWORD");
-        weaponNameList.add("IRON_SWORD");
-        weaponNameList.add("DIAMOND_SWORD");
-        weaponNameList.add("NETHERITE_SWORD");
-        weaponNameList.add("TRIDENT");
+        itemNameList.add("WOODEN_SWORD");
+        itemNameList.add("STONE_SWORD");
+        itemNameList.add("GOLDEN_SWORD");
+        itemNameList.add("IRON_SWORD");
+        itemNameList.add("DIAMOND_SWORD");
+        itemNameList.add("NETHERITE_SWORD");
+        itemNameList.add("TRIDENT");
 
         // Axe
-        weaponNameList.add("WOODEN_AXE");
-        weaponNameList.add("STONE_AXE");
-        weaponNameList.add("GOLDEN_AXE");
-        weaponNameList.add("IRON_AXE");
-        weaponNameList.add("DIAMOND_AXE");
-        weaponNameList.add("NETHERITE_AXE");
+        itemNameList.add("WOODEN_AXE");
+        itemNameList.add("STONE_AXE");
+        itemNameList.add("GOLDEN_AXE");
+        itemNameList.add("IRON_AXE");
+        itemNameList.add("DIAMOND_AXE");
+        itemNameList.add("NETHERITE_AXE");
 
         // Pickaxe
-        weaponNameList.add("WOODEN_PICKAXE");
-        weaponNameList.add("STONE_PICKAXE");
-        weaponNameList.add("GOLDEN_PICKAXE");
-        weaponNameList.add("IRON_PICKAXE");
-        weaponNameList.add("DIAMOND_PICKAXE");
-        weaponNameList.add("NETHERITE_PICKAXE");
+        itemNameList.add("WOODEN_PICKAXE");
+        itemNameList.add("STONE_PICKAXE");
+        itemNameList.add("GOLDEN_PICKAXE");
+        itemNameList.add("IRON_PICKAXE");
+        itemNameList.add("DIAMOND_PICKAXE");
+        itemNameList.add("NETHERITE_PICKAXE");
 
         // Shovel
-        weaponNameList.add("WOODEN_SHOVEL");
-        weaponNameList.add("STONE_SHOVEL");
-        weaponNameList.add("GOLDEN_SHOVEL");
-        weaponNameList.add("IRON_SHOVEL");
-        weaponNameList.add("DIAMOND_SHOVEL");
-        weaponNameList.add("NETHERITE_SHOVEL");
+        itemNameList.add("WOODEN_SHOVEL");
+        itemNameList.add("STONE_SHOVEL");
+        itemNameList.add("GOLDEN_SHOVEL");
+        itemNameList.add("IRON_SHOVEL");
+        itemNameList.add("DIAMOND_SHOVEL");
+        itemNameList.add("NETHERITE_SHOVEL");
 
         // Hoe
-        weaponNameList.add("WOODEN_HOE");
-        weaponNameList.add("STONE_HOE");
-        weaponNameList.add("GOLDEN_HOE");
-        weaponNameList.add("IRON_HOE");
-        weaponNameList.add("DIAMOND_HOE");
-        weaponNameList.add("NETHERITE_HOE");
+        itemNameList.add("WOODEN_HOE");
+        itemNameList.add("STONE_HOE");
+        itemNameList.add("GOLDEN_HOE");
+        itemNameList.add("IRON_HOE");
+        itemNameList.add("DIAMOND_HOE");
+        itemNameList.add("NETHERITE_HOE");
     }
 
-    public void addOldWeaponMaterialsToList(List<String> weaponNameList) {
+    public void addOldItemMaterialsToList(List<String> itemNameList) {
         // Sword
-        weaponNameList.add("SWORDWOOD");
-        weaponNameList.add("SWORDSTONE");
-        weaponNameList.add("SWORDGOLD");
-        weaponNameList.add("SWORDIRON");
-        weaponNameList.add("SWORDDIAMOND");
+        itemNameList.add("SWORDWOOD");
+        itemNameList.add("SWORDSTONE");
+        itemNameList.add("SWORDGOLD");
+        itemNameList.add("SWORDIRON");
+        itemNameList.add("SWORDDIAMOND");
 
         // Axe
-        weaponNameList.add("HATCHETWOOD");
-        weaponNameList.add("HATCHETSTONE");
-        weaponNameList.add("HATCHETGOLD");
-        weaponNameList.add("HATCHETIRON");
-        weaponNameList.add("HATCHETDIAMOND");
+        itemNameList.add("HATCHETWOOD");
+        itemNameList.add("HATCHETSTONE");
+        itemNameList.add("HATCHETGOLD");
+        itemNameList.add("HATCHETIRON");
+        itemNameList.add("HATCHETDIAMOND");
 
         // Pickaxe
-        weaponNameList.add("PICKAXEWOOD");
-        weaponNameList.add("PICKAXESTONE");
-        weaponNameList.add("PICKAXEGOLD");
-        weaponNameList.add("PICKAXEIRON");
-        weaponNameList.add("PICKAXEDIAMOND");
+        itemNameList.add("PICKAXEWOOD");
+        itemNameList.add("PICKAXESTONE");
+        itemNameList.add("PICKAXEGOLD");
+        itemNameList.add("PICKAXEIRON");
+        itemNameList.add("PICKAXEDIAMOND");
 
         // Shovel
-        weaponNameList.add("SHOVELWOOD");
-        weaponNameList.add("SHOVELSTONE");
-        weaponNameList.add("SHOVELGOLD");
-        weaponNameList.add("SHOVELIRON");
-        weaponNameList.add("SHOVELDIAMOND");
+        itemNameList.add("SHOVELWOOD");
+        itemNameList.add("SHOVELSTONE");
+        itemNameList.add("SHOVELGOLD");
+        itemNameList.add("SHOVELIRON");
+        itemNameList.add("SHOVELDIAMOND");
 
         // Hoe
-        weaponNameList.add("HOEWOOD");
-        weaponNameList.add("HOESTONE");
-        weaponNameList.add("HOEGOLD");
-        weaponNameList.add("HOEIRON");
-        weaponNameList.add("HOEDIAMOND");
+        itemNameList.add("HOEWOOD");
+        itemNameList.add("HOESTONE");
+        itemNameList.add("HOEGOLD");
+        itemNameList.add("HOEIRON");
+        itemNameList.add("HOEDIAMOND");
     }
 
     public void swapHands(Player player) {

@@ -18,18 +18,17 @@ public class PlayerInteractEntityListener implements Listener {
         this.wieldManager = wieldManager;
     }
 
-    @EventHandler(priority = EventPriority.MONITOR)
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerInteractEntity(PlayerInteractEntityEvent event) {
         Player player = event.getPlayer();
         ItemStack itemInOffHand = player.getInventory().getItemInOffHand();
         Entity entity = event.getRightClicked();
 
-        if (!event.isCancelled()
-                && player.hasPermission("dualwield.attack")
+        if (player.hasPermission("dualwield.attack")
                 && itemInOffHand.getAmount() != 0
                 && event.getHand() == EquipmentSlot.OFF_HAND
                 && player.getGameMode() != GameMode.SPECTATOR
-                && wieldManager.isWeapon(itemInOffHand)) {
+                && wieldManager.isValidItem(itemInOffHand)) {
             wieldManager.attackEntityOffHand(player, entity);
             wieldManager.getNMS().offHandAnimation(player);
         }

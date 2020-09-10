@@ -212,10 +212,11 @@ public class NMS_v1_9_R2 implements NMS {
 		EntityPlayer entityPlayer = ((CraftPlayer) player).getHandle();
 		Entity nmsEntity = ((CraftEntity) entity).getHandle();
 
+		org.bukkit.inventory.ItemStack itemInMainHand = player.getInventory().getItemInOffHand();
 		org.bukkit.inventory.ItemStack itemInOffHand = player.getInventory().getItemInMainHand();
 		ItemStack craftItemInOffHand = CraftItemStack.asNMSCopy(itemInOffHand);
 
-		float damage = (float) getAttackDamage(itemInOffHand);
+		float damage = (float) getAttackDamage(itemInOffHand) + ((float) entityPlayer.getAttributeInstance(GenericAttributes.ATTACK_DAMAGE).getValue() - (float) getAttackDamage(itemInMainHand));
 		float enchantmentLevel;
 		if (nmsEntity instanceof EntityLiving) {
 			enchantmentLevel = EnchantmentManager.a(craftItemInOffHand, ((EntityLiving) nmsEntity).getMonsterType());
