@@ -3,7 +3,10 @@ package com.ranull.dualwield.managers;
 import com.ranull.dualwield.DualWield;
 import com.ranull.dualwield.data.BlockBreakData;
 import com.ranull.dualwield.nms.NMS;
-import org.bukkit.*;
+import org.bukkit.Effect;
+import org.bukkit.GameMode;
+import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
@@ -20,7 +23,7 @@ public class WieldManager {
     private final DualWield plugin;
     private final NMS nms;
     private final Map<Block, BlockBreakData> blockBreakDataList = new HashMap<>();
-    List<String> itemNameList = new ArrayList<>();
+    private final List<String> itemNameList = new ArrayList<>();
 
     public WieldManager(DualWield plugin, NMS nms) {
         this.plugin = plugin;
@@ -65,13 +68,13 @@ public class WieldManager {
                     }
                 }
             } else {
-                // Wrong tool timer debuff
+                // Wrong tool debuff
                 timer = timer * (blockBreakData.getHardness() * 2);
             }
 
             // Mining fatigue debuff
             if (blockBreakData.getPlayer().hasPotionEffect(PotionEffectType.SLOW_DIGGING)) {
-                timer *= (blockBreakData.getPlayer().getPotionEffect(PotionEffectType.SLOW_DIGGING).getAmplifier() * 15);
+                timer *= blockBreakData.getPlayer().getPotionEffect(PotionEffectType.SLOW_DIGGING).getAmplifier() * 15;
             }
 
             // Swimming debuff
@@ -113,6 +116,7 @@ public class WieldManager {
                         for (Player nearbyPlayer : nearbyPlayers) {
                             blockCrackAnimation(blockBreakData, nearbyPlayer, -1);
                         }
+
                         blockCrackParticle(blockBreakData);
 
                         // Break block on the main thread
@@ -153,11 +157,7 @@ public class WieldManager {
     }
 
     public BlockBreakData getBreakData(Block block) {
-        if (blockBreakDataList.containsKey(block)) {
-            return blockBreakDataList.get(block);
-        }
-
-        return null;
+        return blockBreakDataList.get(block);
     }
 
     public void addBreakData(BlockBreakData blockBreakData) {
@@ -183,18 +183,15 @@ public class WieldManager {
 
             blockBreakData.getBlock().getWorld().playEffect(blockBreakData.getBlock().getLocation(),
                     Effect.STEP_SOUND, blockBreakData.getBlock().getType());
-
             blockBreakData.getBlock().breakNaturally(blockBreakData.getItemInOffHand());
         }
 
         swapHands(player);
-
         player.updateInventory();
     }
 
     public void attackEntityOffHand(Player player, Entity entity) {
         swapHands(player, true);
-
         nms.attackEntityOffHand(player, entity);
 
         ItemStack itemStack = player.getInventory().getItemInMainHand();
@@ -202,24 +199,53 @@ public class WieldManager {
 
         plugin.getServer().getPluginManager().callEvent(playerItemDamageEvent);
 
-        if (!playerItemDamageEvent.isCancelled()) {
-            if (!nms.hasNBTKey(player.getInventory().getItemInMainHand(), "Unbreakable")
-                    && player.getGameMode() != GameMode.CREATIVE) {
-                nms.damageItem(itemStack, player);
-            }
+        if (!playerItemDamageEvent.isCancelled()
+                && !nms.hasNBTKey(player.getInventory().getItemInMainHand(), "Unbreakable")
+                && player.getGameMode() != GameMode.CREATIVE) {
+            nms.damageItem(itemStack, player);
         }
 
         swapHands(player);
-
         player.updateInventory();
     }
 
     public boolean isValidItem(ItemStack itemStack) {
-        if (itemNameList.contains(nms.getItemName(itemStack))) {
-            return true;
+        return itemNameList.stream().anyMatch(nms.getItemName(itemStack)::equalsIgnoreCase);
+    }
+
+    public void swapHands(Player player) {
+        swapHands(player, false);
+    }
+
+    public void swapHands(Player player, boolean apiData) {
+        ItemStack itemInMainHand = player.getInventory().getItemInMainHand().clone();
+        ItemStack itemInOffHand = player.getInventory().getItemInOffHand().clone();
+
+        if (apiData) {
+            itemInOffHand = nms.addNBTKey(itemInOffHand, "dualWieldItem");
+        } else {
+            itemInMainHand = nms.removeNBTKey(itemInMainHand, "dualWieldItem");
         }
 
-        return false;
+        nms.setItemInMainHand(player, itemInOffHand);
+        nms.setItemInOffHand(player, itemInMainHand);
+    }
+
+    public void blockHitSound(BlockBreakData blockBreakData) {
+        blockBreakData.getBlock().getWorld().playSound(blockBreakData.getBlock().getLocation(),
+                nms.getBreakSound(blockBreakData.getBlock()), 0.50F, 0.75F);
+    }
+
+    public void blockCrackAnimation(BlockBreakData blockBreakData, Player player) {
+        blockCrackAnimation(blockBreakData, player, blockBreakData.getCrackAmount());
+    }
+
+    public void blockCrackAnimation(BlockBreakData blockBreakData, Player player, int stage) {
+        nms.blockBreakAnimation(player, blockBreakData.getBlock(), blockBreakData.getAnimationID(), stage);
+    }
+
+    public void blockCrackParticle(BlockBreakData blockBreakData) {
+        nms.blockCrackParticle(blockBreakData.getBlock());
     }
 
     public void addNewItemMaterialsToList(List<String> itemNameList) {
@@ -300,41 +326,5 @@ public class WieldManager {
         itemNameList.add("HOEGOLD");
         itemNameList.add("HOEIRON");
         itemNameList.add("HOEDIAMOND");
-    }
-
-    public void swapHands(Player player) {
-        swapHands(player, false);
-    }
-
-    public void swapHands(Player player, boolean apiData) {
-        ItemStack itemInMainHand = player.getInventory().getItemInMainHand().clone();
-        ItemStack itemInOffHand = player.getInventory().getItemInOffHand().clone();
-
-        if (apiData) {
-            itemInOffHand = nms.addNBTKey(itemInOffHand, "dualWieldItem");
-        } else {
-            itemInMainHand = nms.removeNBTKey(itemInMainHand, "dualWieldItem");
-        }
-
-        nms.setItemInMainHand(player, itemInOffHand);
-        nms.setItemInOffHand(player, itemInMainHand);
-    }
-
-    public void blockHitSound(BlockBreakData blockBreakData) {
-        Sound sound = nms.getBreakSound(blockBreakData.getBlock());
-
-        blockBreakData.getBlock().getWorld().playSound(blockBreakData.getBlock().getLocation(), sound, 0.50F, 0.75F);
-    }
-
-    public void blockCrackAnimation(BlockBreakData blockBreakData, Player player) {
-        blockCrackAnimation(blockBreakData, player, blockBreakData.getCrackAmount());
-    }
-
-    public void blockCrackAnimation(BlockBreakData blockBreakData, Player player, int stage) {
-        nms.blockBreakAnimation(player, blockBreakData.getBlock(), blockBreakData.getAnimationID(), stage);
-    }
-
-    public void blockCrackParticle(BlockBreakData blockBreakData) {
-        nms.blockCrackParticle(blockBreakData.getBlock());
     }
 }

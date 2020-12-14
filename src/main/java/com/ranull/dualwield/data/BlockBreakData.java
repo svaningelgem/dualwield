@@ -5,22 +5,22 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 public class BlockBreakData {
-    private Block block;
-    private Player player;
-    private ItemStack itemInOffHand;
-    private int animationID;
+    private final Block block;
+    private final Player player;
+    private final ItemStack itemInOffHand;
+    private final int animationID;
+    private final float hardness;
     private int crackAmount;
     private long lastMineTime;
-    private float hardness;
 
     public BlockBreakData(Block block, float hardness, Player player, ItemStack itemInOffHand, int animationID) {
         this.block = block;
         this.player = player;
         this.itemInOffHand = itemInOffHand;
         this.animationID = animationID;
+        this.hardness = hardness;
         this.crackAmount = 0;
         this.lastMineTime = System.currentTimeMillis();
-        this.hardness = hardness;
     }
 
     public Block getBlock() {
@@ -39,6 +39,10 @@ public class BlockBreakData {
         return animationID;
     }
 
+    public float getHardness() {
+        return hardness;
+    }
+
     public long getLastMineTime() {
         return lastMineTime;
     }
@@ -49,10 +53,6 @@ public class BlockBreakData {
 
     public void addCrackAmount() {
         crackAmount++;
-    }
-
-    public float getHardness() {
-        return hardness;
     }
 
     public void updateLastMineTime() {

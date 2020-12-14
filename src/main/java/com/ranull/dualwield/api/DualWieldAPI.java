@@ -8,8 +8,8 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.inventory.ItemStack;
 
 public class DualWieldAPI {
-    private WieldManager wieldManager;
-    private NMS nms;
+    private final WieldManager wieldManager;
+    private final NMS nms;
 
     public DualWieldAPI(WieldManager wieldManager, NMS nms) {
         this.wieldManager = wieldManager;
@@ -20,11 +20,7 @@ public class DualWieldAPI {
         Player player = blockBreakEvent.getPlayer();
         ItemStack itemStack = player.getInventory().getItemInMainHand();
 
-        if (nms.hasNBTKey(itemStack, "dualWieldItem")) {
-            return true;
-        }
-
-        return false;
+        return nms.hasNBTKey(itemStack, "dualWieldItem");
     }
 
     public boolean isEntityDamageByEntityEventOffHand(EntityDamageByEntityEvent entityDamageByEntityEvent) {
@@ -32,9 +28,7 @@ public class DualWieldAPI {
             Player player = (Player) entityDamageByEntityEvent.getDamager();
             ItemStack itemStack = player.getInventory().getItemInMainHand();
 
-            if (nms.hasNBTKey(itemStack, "dualWieldItem")) {
-                return true;
-            }
+            return nms.hasNBTKey(itemStack, "dualWieldItem");
         }
 
         return false;
