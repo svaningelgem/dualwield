@@ -156,8 +156,19 @@ public class NMS_v1_16_R3 implements NMS {
             Block nmsBlock = nmsWorld.getType(new BlockPosition(block.getX(), block.getY(), block.getZ())).getBlock();
             SoundEffectType soundEffectType = nmsBlock.getStepSound(nmsBlock.getBlockData());
 
-            SoundEffect soundEffect = soundEffectType.g();
+            Field soundEffectField;
+
+            if (Bukkit.getVersion().contains("1.16.4")) {
+                soundEffectField = soundEffectType.getClass().getDeclaredField("ab");
+            } else {
+                soundEffectField = soundEffectType.getClass().getDeclaredField("fallSound");
+            }
+
+            soundEffectField.setAccessible(true);
+
+            SoundEffect soundEffect = (SoundEffect) soundEffectField.get(soundEffectType);
             Field keyField = SoundEffect.class.getDeclaredField("b");
+
             keyField.setAccessible(true);
 
             MinecraftKey minecraftKey = (MinecraftKey) keyField.get(soundEffect);
