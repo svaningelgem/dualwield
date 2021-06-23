@@ -49,6 +49,8 @@ public final class DualWield extends JavaPlugin {
                 nms = new NMS_v1_16_R2();
             } else if (version.equals("v1_16_R3")) {
                 nms = new NMS_v1_16_R3();
+            } else if (version.equals("v1_17_R1")) {
+                nms = new NMS_v1_17_R1();
             }
 
             return nms != null;

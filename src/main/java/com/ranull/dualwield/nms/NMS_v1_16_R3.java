@@ -101,54 +101,6 @@ public class NMS_v1_16_R3 implements NMS {
         return 1;
     }
 
-    public double getAttackSpeed(org.bukkit.inventory.ItemStack itemStack) {
-        if (itemStack.getAmount() != 0) {
-            ItemStack craftItemStack = CraftItemStack.asNMSCopy(itemStack);
-            Multimap<AttributeBase, AttributeModifier> attributeMultimap = craftItemStack.a(EnumItemSlot.MAINHAND);
-
-            AttributeModifier attributeModifier = Iterables
-                    .getFirst(attributeMultimap.get(GenericAttributes.ATTACK_SPEED), null);
-
-            if (attributeModifier != null) {
-                return Math.abs(attributeModifier.getAmount());
-            }
-        }
-
-        return 4;
-    }
-
-    public void setAttackCooldown(Player player, int cooldown) {
-        try {
-            EntityLiving entityLivingPlayer = ((CraftPlayer) player).getHandle();
-            Field keyField = EntityLiving.class.getDeclaredField("at");
-
-            keyField.setAccessible(true);
-            keyField.setInt(entityLivingPlayer, cooldown);
-            keyField.setAccessible(false);
-        } catch (NoSuchFieldException | IllegalAccessException exception) {
-            exception.printStackTrace();
-        }
-    }
-
-    public int getAttackCooldown(Player player) {
-        try {
-            EntityLiving entityLivingPlayer = ((CraftPlayer) player).getHandle();
-            Field keyField = EntityLiving.class.getDeclaredField("at");
-
-            keyField.setAccessible(true);
-
-            int cooldown = (int) keyField.get(entityLivingPlayer);
-
-            keyField.setAccessible(false);
-
-            return cooldown;
-        } catch (NoSuchFieldException | IllegalAccessException exception) {
-            exception.printStackTrace();
-        }
-
-        return 1;
-    }
-
     @Override
     public Sound getBreakSound(org.bukkit.block.Block block) {
         try {
