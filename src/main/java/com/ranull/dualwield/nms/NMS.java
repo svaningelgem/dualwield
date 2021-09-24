@@ -19,8 +19,6 @@ public interface NMS {
 
     void setItemInOffHand(Player player, ItemStack itemStack);
 
-    void attackEntityOffHand(Player player, Entity entity);
-
     void damageItem(ItemStack itemStack, Player player);
 
     ItemStack addNBTKey(ItemStack itemStack, String key);
@@ -33,7 +31,11 @@ public interface NMS {
 
     double getAttackDamage(ItemStack itemStack);
 
-    Sound getBreakSound(Block block);
+    Sound getHitSound(Block block);
 
     float getBlockHardness(Block block);
+
+    boolean breakBlock(Player player, Block block);
+
+    void attackEntityOffHand(Player player, Entity entity);
 }

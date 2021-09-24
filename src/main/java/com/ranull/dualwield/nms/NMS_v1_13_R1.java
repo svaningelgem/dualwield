@@ -2,21 +2,21 @@ package com.ranull.dualwield.nms;
 
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
-import net.minecraft.server.v1_12_R1.*;
+import net.minecraft.server.v1_13_R1.*;
 import org.bukkit.Bukkit;
-import org.bukkit.Particle;
 import org.bukkit.Sound;
-import org.bukkit.craftbukkit.v1_12_R1.CraftWorld;
-import org.bukkit.craftbukkit.v1_12_R1.entity.CraftEntity;
-import org.bukkit.craftbukkit.v1_12_R1.entity.CraftPlayer;
-import org.bukkit.craftbukkit.v1_12_R1.event.CraftEventFactory;
-import org.bukkit.craftbukkit.v1_12_R1.inventory.CraftItemStack;
-import org.bukkit.craftbukkit.v1_12_R1.util.CraftMagicNumbers;
+import org.bukkit.craftbukkit.v1_13_R1.CraftWorld;
+import org.bukkit.craftbukkit.v1_13_R1.entity.CraftEntity;
+import org.bukkit.craftbukkit.v1_13_R1.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_13_R1.event.CraftEventFactory;
+import org.bukkit.craftbukkit.v1_13_R1.inventory.CraftItemStack;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityCombustByEntityEvent;
 import org.bukkit.event.player.PlayerVelocityEvent;
+import org.bukkit.inventory.meta.Damageable;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.material.MaterialData;
 import org.bukkit.util.Vector;
 
@@ -25,7 +25,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
-public class NMS_v1_12_R1 implements NMS {
+public class NMS_v1_13_R1 implements NMS {
     @Override
     public void offHandAnimation(Player player) {
         EntityPlayer entityPlayer = ((CraftPlayer) player).getHandle();
@@ -51,14 +51,15 @@ public class NMS_v1_12_R1 implements NMS {
     public void blockCrackParticle(org.bukkit.block.Block block) {
         MaterialData materialData = new MaterialData(block.getType(), block.getData());
 
-        block.getWorld().spawnParticle(Particle.BLOCK_CRACK, block.getLocation().add(0.5, 0, 0.5), 10, materialData);
+        block.getWorld().spawnParticle(org.bukkit.Particle.BLOCK_CRACK, block.getLocation().add(0.5, 0, 0.5), 10, materialData);
     }
 
     @Override
     public float getToolStrength(org.bukkit.block.Block block, org.bukkit.inventory.ItemStack itemStack) {
         if (itemStack.getAmount() != 0) {
             ItemStack craftItemStack = CraftItemStack.asNMSCopy(itemStack);
-            Block nmsBlock = CraftMagicNumbers.getBlock(block);
+            World nmsWorld = ((CraftWorld) block.getWorld()).getHandle();
+            Block nmsBlock = nmsWorld.getType(new BlockPosition(block.getX(), block.getY(), block.getZ())).getBlock();
 
             return craftItemStack.a(nmsBlock.getBlockData());
         }
@@ -121,31 +122,33 @@ public class NMS_v1_12_R1 implements NMS {
         return Sound.BLOCK_STONE_HIT;
     }
 
-    @SuppressWarnings("deprecation")
     @Override
     public float getBlockHardness(org.bukkit.block.Block block) {
-        Block nmsBlock = CraftMagicNumbers.getBlock(block);
         World nmsWorld = ((CraftWorld) block.getWorld()).getHandle();
-        BlockPosition blockPosition = new BlockPosition(block.getX(), block.getY(), block.getZ());
+        Block nmsBlock = nmsWorld.getType(new BlockPosition(block.getX(), block.getY(), block.getZ())).getBlock();
 
-        return nmsBlock.a(nmsBlock.getBlockData(), nmsWorld, blockPosition);
+        return nmsBlock.strength;
     }
 
-    @SuppressWarnings("deprecation")
     @Override
     public void damageItem(org.bukkit.inventory.ItemStack itemStack, Player player) {
         ItemStack craftItemStack = CraftItemStack.asNMSCopy(itemStack);
 
-        if (craftItemStack.getItem().getMaxDurability() > 0 && calculateUnbreakingChance(itemStack)) {
-            if (itemStack.getDurability() >= craftItemStack.getItem().getMaxDurability()) {
+        if (itemStack.getItemMeta() instanceof Damageable
+                && craftItemStack.getItem().getMaxDurability() > 0
+                && calculateUnbreakingChance(itemStack)) {
+            Damageable damageable = (Damageable) itemStack.getItemMeta();
+            damageable.setDamage(damageable.getDamage() + 1);
+
+            itemStack.setItemMeta((ItemMeta) damageable);
+
+            if (damageable.getDamage() >= craftItemStack.getItem().getMaxDurability()) {
                 EntityPlayer entityPlayer = ((CraftPlayer) player).getHandle();
                 CraftEventFactory.callPlayerItemBreakEvent(entityPlayer, craftItemStack);
 
                 itemStack.setAmount(0);
                 player.getWorld().playSound(player.getLocation(), Sound.ENTITY_ITEM_BREAK, 1, 1);
             }
-
-            itemStack.setDurability((short) (itemStack.getDurability() + 1));
         }
     }
 
@@ -199,7 +202,7 @@ public class NMS_v1_12_R1 implements NMS {
     public String getItemName(org.bukkit.inventory.ItemStack itemStack) {
         ItemStack craftItemStack = CraftItemStack.asNMSCopy(itemStack);
 
-        return craftItemStack.a().replace("item.", "").toUpperCase();
+        return craftItemStack.j().replace("item.minecraft.", "").toUpperCase();
     }
 
     @Override
@@ -227,7 +230,7 @@ public class NMS_v1_12_R1 implements NMS {
             enchantmentLevel = EnchantmentManager.a(craftItemInOffHand, EnumMonsterType.UNDEFINED);
         }
 
-        float attackCooldown = entityPlayer.n(0.5F);
+        float attackCooldown = entityPlayer.r(0.5F);
 
         damage *= 0.2F + attackCooldown * attackCooldown * 0.8F;
         enchantmentLevel *= attackCooldown;
@@ -262,10 +265,10 @@ public class NMS_v1_12_R1 implements NMS {
             damage += enchantmentLevel;
 
             boolean shouldSweep = false;
-            double d0 = (entityPlayer.J - entityPlayer.I);
+            double d0 = (entityPlayer.K - entityPlayer.J);
 
             if (cooldownOver && !shouldCrit && !hasKnockedback && player.isOnGround()
-                    && d0 < (double) entityPlayer.cy()) {
+                    && d0 < (double) entityPlayer.cK()) {
                 ItemStack itemStack = entityPlayer.b(EnumHand.OFF_HAND);
 
                 if (itemStack.getItem() instanceof ItemSword) {
@@ -307,18 +310,33 @@ public class NMS_v1_12_R1 implements NMS {
 
                 if (shouldSweep) {
                     float f4 = 1.0F + EnchantmentManager.a(entityPlayer) * damage;
-                    List list = entityPlayer.world.a(EntityLiving.class, nmsEntity.getBoundingBox().grow(1.0D, 0.25D, 1.0D));
-                    Iterator iterator = list.iterator();
+                    List<EntityLiving> entityLivingList = entityPlayer.world.a(EntityLiving.class, nmsEntity.getBoundingBox().grow(1.0D, 0.25D, 1.0D));
+                    Iterator iterator = entityLivingList.iterator();
 
-                    while (iterator.hasNext()) {
-                        EntityLiving entityLiving = (EntityLiving) iterator.next();
-                        if (entityLiving != entityPlayer && entityLiving != entity && !entityPlayer.r(entityLiving) && entityPlayer.h(entityLiving) < 9.0D && entityLiving.damageEntity(DamageSource.playerAttack(entityPlayer).sweep(), f4)) {
-                            entityLiving.a(entityPlayer, 0.4F, MathHelper.sin(entityPlayer.yaw * 0.017453292F), -MathHelper.cos(entityPlayer.yaw * 0.017453292F));
+                    sweepLoop:
+                    while (true) {
+                        EntityLiving entityliving;
+                        do {
+                            do {
+                                do {
+                                    do {
+                                        if (!iterator.hasNext()) {
+                                            player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_ATTACK_SWEEP, 1.0F, 1.0F);
+                                            entityPlayer.dl();
+
+                                            break sweepLoop;
+                                        }
+
+                                        entityliving = (EntityLiving) iterator.next();
+                                    } while (entityliving == entityPlayer);
+                                } while (entityliving == nmsEntity);
+                            } while (entityPlayer.r(entityliving));
+                        } while (entityliving instanceof EntityArmorStand && ((EntityArmorStand) entityliving).isMarker());
+
+                        if (entityPlayer.h(entityliving) < 9.0D && entityliving.damageEntity(DamageSource.playerAttack(entityPlayer).sweep(), f4)) {
+                            entityliving.a(entityliving, 0.4F, MathHelper.sin(entityPlayer.yaw * 0.017453292F), (-MathHelper.cos(entityPlayer.yaw * 0.017453292F)));
                         }
                     }
-
-                    entityPlayer.world.a(null, entityPlayer.locX, entityPlayer.locY, entityPlayer.locZ, SoundEffects.fz, entityPlayer.bK(), 1.0F, 1.0F);
-                    entityPlayer.cX();
                 }
 
                 if (nmsEntity instanceof EntityPlayer && nmsEntity.velocityChanged) {
@@ -370,23 +388,21 @@ public class NMS_v1_12_R1 implements NMS {
                 EnchantmentManager.b(entityPlayer, nmsEntity);
                 Object object = nmsEntity;
 
-                if (entity instanceof EntityComplexPart) {
-                    IComplex icomplex = ((EntityComplexPart) entity).owner;
-                    if (icomplex instanceof EntityLiving) {
-                        object = icomplex;
-                    }
+                if (nmsEntity instanceof EntityComplexPart) {
+                    object = ((EntityComplexPart) nmsEntity).owner;
                 }
 
-                if (!craftItemInOffHand.isEmpty() && object instanceof EntityLiving) {
+                if (!entityPlayer.world.isClientSide && !craftItemInOffHand.isEmpty() && object instanceof EntityLiving) {
                     craftItemInOffHand.a((EntityLiving) object, entityPlayer);
+
                     if (craftItemInOffHand.isEmpty()) {
                         entityPlayer.a(EnumHand.MAIN_HAND, ItemStack.a);
                     }
                 }
 
-                if (entity instanceof EntityLiving) {
-                    float newEntityHealth = entityHealth - ((EntityLiving) entity).getHealth();
-                    entityPlayer.a(StatisticList.y, Math.round(newEntityHealth * 10.0F));
+                if (nmsEntity instanceof EntityLiving) {
+                    float newEntityHealth = entityHealth - ((EntityLiving) nmsEntity).getHealth();
+                    entityPlayer.a(StatisticList.DAMAGE_DEALT, Math.round(newEntityHealth * 10.0F));
 
                     if (fireAspectEnchantmentLevel > 0) {
                         EntityCombustByEntityEvent combustEvent = new EntityCombustByEntityEvent(entityPlayer.getBukkitEntity(), nmsEntity.getBukkitEntity(), fireAspectEnchantmentLevel * 4);
@@ -399,7 +415,7 @@ public class NMS_v1_12_R1 implements NMS {
 
                     if (entityPlayer.world instanceof WorldServer && newEntityHealth > 2.0F) {
                         int k = (int) ((double) newEntityHealth * 0.5D);
-                        ((WorldServer) entityPlayer.world).a(EnumParticle.DAMAGE_INDICATOR, nmsEntity.locX, nmsEntity.locY + (double) (nmsEntity.length * 0.5F), nmsEntity.locZ, k, 0.1D, 0.0D, 0.1D, 0.2D, new int[0]);
+                        ((WorldServer) entityPlayer.world).a(Particles.i, nmsEntity.locX, nmsEntity.locY + (double) (nmsEntity.length * 0.5F), nmsEntity.locZ, k, 0.1D, 0.0D, 0.1D, 0.2D);
                     }
                 }
 

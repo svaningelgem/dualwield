@@ -100,7 +100,7 @@ public class NMS_v1_10_R1 implements NMS {
     }
 
     @Override
-    public Sound getBreakSound(org.bukkit.block.Block block) {
+    public Sound getHitSound(org.bukkit.block.Block block) {
         try {
             World nmsWorld = ((CraftWorld) block.getWorld()).getHandle();
             Block nmsBlock = nmsWorld.getType(new BlockPosition(block.getX(), block.getY(), block.getZ())).getBlock();
@@ -112,14 +112,9 @@ public class NMS_v1_10_R1 implements NMS {
 
             MinecraftKey minecraftKey = (MinecraftKey) keyField.get(soundEffect);
 
-            String soundString = minecraftKey.a().toUpperCase()
+            return Sound.valueOf(minecraftKey.a().toUpperCase()
                     .replace(".", "_")
-                    .replace("_FALL", "_HIT");
-            Sound sound = Sound.valueOf(soundString);
-
-            if (sound != null) {
-                return sound;
-            }
+                    .replace("_FALL", "_HIT"));
         } catch (NoSuchFieldException | IllegalAccessException ignored) {
         }
 
@@ -205,6 +200,14 @@ public class NMS_v1_10_R1 implements NMS {
         ItemStack craftItemStack = CraftItemStack.asNMSCopy(itemStack);
 
         return craftItemStack.a().replace("item.", "").toUpperCase();
+    }
+
+    @Override
+    public boolean breakBlock(Player player, org.bukkit.block.Block block) {
+        EntityPlayer entityPlayer = ((CraftPlayer) player).getHandle();
+        BlockPosition blockPosition = new BlockPosition(block.getX(), block.getY(), block.getZ());
+
+        return entityPlayer.playerInteractManager.breakBlock(blockPosition);
     }
 
     @Override

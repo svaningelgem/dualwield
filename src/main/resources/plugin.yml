@@ -3,6 +3,13 @@ description: ${project.description}
 version: ${project.version}
 main: com.ranull.dualwield.DualWield
 author: Ranull
+api-version: 1.13
+
+commands:
+  dualwield:
+    description: DualWield info
+    default: true
+    usage: /dualwield
 
 permissions:
   dualwield.attack:
@@ -11,3 +18,6 @@ permissions:
   dualwield.mine:
     default: true
     description: Mine blocks with off-hand item
+  dualwield.reload:
+    default: op
+    description: Reload DualWield
