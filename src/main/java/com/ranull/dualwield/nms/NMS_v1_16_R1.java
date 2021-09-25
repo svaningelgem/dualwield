@@ -17,8 +17,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityCombustByEntityEvent;
 import org.bukkit.event.player.PlayerVelocityEvent;
 import org.bukkit.inventory.meta.Damageable;
-import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.material.MaterialData;
 import org.bukkit.util.Vector;
 
 import java.lang.reflect.Field;
@@ -50,9 +48,8 @@ public class NMS_v1_16_R1 implements NMS {
     @SuppressWarnings("deprecation")
     @Override
     public void blockCrackParticle(org.bukkit.block.Block block) {
-        MaterialData materialData = new MaterialData(block.getType(), block.getData());
-
-        block.getWorld().spawnParticle(org.bukkit.Particle.BLOCK_CRACK, block.getLocation().add(0.5, 0, 0.5), 10, materialData);
+        block.getWorld().spawnParticle(org.bukkit.Particle.BLOCK_CRACK, block.getLocation().add(0.5, 0, 0.5),
+                10, block.getBlockData());
     }
 
     @Override
@@ -141,7 +138,7 @@ public class NMS_v1_16_R1 implements NMS {
             Damageable damageable = (Damageable) itemStack.getItemMeta();
             damageable.setDamage(damageable.getDamage() + 1);
 
-            itemStack.setItemMeta((ItemMeta) damageable);
+            itemStack.setItemMeta(damageable);
 
             if (damageable.getDamage() >= craftItemStack.getItem().getMaxDurability()) {
                 EntityPlayer entityPlayer = ((CraftPlayer) player).getHandle();

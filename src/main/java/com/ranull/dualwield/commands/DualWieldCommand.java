@@ -15,7 +15,7 @@ public class DualWieldCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        String version = "2.3";
+        String version = "2.4";
         String author = "Ranull";
 
         if (args.length == 0) {

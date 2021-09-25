@@ -16,7 +16,7 @@ settings:
   mine:
     hand: false # Mine when the player does not have anything in their off-hand.
     standing: true # Mine when the player is standing.
-    sneaking: false # Mine when the player is sneaking.
+    sneaking: true # Mine when the player is sneaking.
     gamemode: # Mine when player is in these gamemodes.
       - SURVIVAL
       - CREATIVE
