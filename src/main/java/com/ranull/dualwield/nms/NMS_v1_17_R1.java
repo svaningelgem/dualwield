@@ -194,14 +194,14 @@ public class NMS_v1_17_R1 implements NMS {
                 && craftItemStack.getItem().getMaxDamage() > 0
                 && calculateUnbreakingChance(itemStack)) {
             Damageable damageable = (Damageable) itemStack.getItemMeta();
-            damageable.setDamage(damageable.getDamage() + 1);
 
+            damageable.setDamage(damageable.getDamage() + 1);
             itemStack.setItemMeta(damageable);
 
             if (damageable.getDamage() >= craftItemStack.getItem().getMaxDamage()) {
                 ServerPlayer serverPlayer = ((CraftPlayer) player).getHandle();
-                CraftEventFactory.callPlayerItemBreakEvent(serverPlayer, craftItemStack);
 
+                CraftEventFactory.callPlayerItemBreakEvent(serverPlayer, craftItemStack);
                 itemStack.setAmount(0);
                 player.getWorld().playSound(player.getLocation(), Sound.ENTITY_ITEM_BREAK, 1, 1);
             }
@@ -210,7 +210,6 @@ public class NMS_v1_17_R1 implements NMS {
 
     public boolean calculateUnbreakingChance(org.bukkit.inventory.ItemStack itemStack) {
         int enchantmentLevel = itemStack.getEnchantmentLevel(Enchantment.DURABILITY);
-
         Random random = new Random();
 
         if (enchantmentLevel == 1) {
@@ -362,7 +361,7 @@ public class NMS_v1_17_R1 implements NMS {
                                                 break label179;
                                             }
 
-                                            entityliving = (LivingEntity) iterator.next();
+                                            entityliving = iterator.next();
                                         } while (entityliving == serverPlayer);
                                     } while (entityliving == nmsEntity);
                                 } while (serverPlayer.isAlliedTo(entityliving));
@@ -416,15 +415,15 @@ public class NMS_v1_17_R1 implements NMS {
                     }
 
                     EnchantmentHelper.doPostDamageEffects(serverPlayer, nmsEntity);
-                    ItemStack itemstack1 = craftItemInOffHand;
                     Object object = nmsEntity;
+
                     if (nmsEntity instanceof EnderDragonPart) {
                         object = ((EnderDragonPart) nmsEntity).parentMob;
                     }
 
-                    if (!serverPlayer.level.isClientSide && !itemstack1.isEmpty() && object instanceof LivingEntity) {
-                        itemstack1.hurtEnemy((LivingEntity) object, serverPlayer);
-                        if (itemstack1.isEmpty()) {
+                    if (!serverPlayer.level.isClientSide && !craftItemInOffHand.isEmpty() && object instanceof LivingEntity) {
+                        craftItemInOffHand.hurtEnemy((LivingEntity) object, serverPlayer);
+                        if (craftItemInOffHand.isEmpty()) {
                             serverPlayer.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
                         }
                     }
@@ -448,7 +447,13 @@ public class NMS_v1_17_R1 implements NMS {
                         }
                     }
 
-                    serverPlayer.applyExhaustion(serverPlayer.level.spigotConfig.combatExhaustion, EntityExhaustionEvent.ExhaustionReason.ATTACK);
+                    try {
+                        Class.forName("org.spigotmc.SpigotConfig");
+                        serverPlayer.applyExhaustion(serverPlayer.level.spigotConfig.combatExhaustion,
+                                EntityExhaustionEvent.ExhaustionReason.ATTACK);
+                    } catch (ClassNotFoundException ignored) {
+                        serverPlayer.applyExhaustion(0.1F, EntityExhaustionEvent.ExhaustionReason.ATTACK);
+                    }
                 } else {
                     serverPlayer.level.playSound(null, serverPlayer.getX(), serverPlayer.getY(), serverPlayer.getZ(), SoundEvents.PLAYER_ATTACK_NODAMAGE, serverPlayer.getSoundSource(), 1.0F, 1.0F);
                     if (flag4) {

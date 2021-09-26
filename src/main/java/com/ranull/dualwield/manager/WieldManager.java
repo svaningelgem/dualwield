@@ -30,9 +30,9 @@ public class WieldManager {
         final List<Player> nearbyPlayers = getNearbyPlayers(blockBreakData.getBlock().getLocation(), 20);
         float blockHardness = plugin.getNMS().getBlockHardness(blockBreakData.getBlock());
 
-        if (blockBreakData.getPlayer().getGameMode() == GameMode.CREATIVE || blockHardness <= 0.0) {
+        if (blockBreakData.getPlayer().getGameMode() == GameMode.CREATIVE || blockHardness == 0) {
             breakBlockOffHand(blockBreakData);
-        } else if (blockHardness > 0.0) {
+        } else if (blockHardness > 0) {
             // Timed break tool
             float toolStrength = plugin.getNMS().getToolStrength(blockBreakData.getBlock(),
                     blockBreakData.getItemInOffHand());

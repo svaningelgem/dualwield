@@ -139,8 +139,8 @@ public class NMS_v1_10_R1 implements NMS {
         if (craftItemStack.getItem().getMaxDurability() > 0 && calculateUnbreakingChance(itemStack)) {
             if (itemStack.getDurability() >= craftItemStack.getItem().getMaxDurability()) {
                 EntityPlayer entityPlayer = ((CraftPlayer) player).getHandle();
-                CraftEventFactory.callPlayerItemBreakEvent(entityPlayer, craftItemStack);
 
+                CraftEventFactory.callPlayerItemBreakEvent(entityPlayer, craftItemStack);
                 itemStack.setAmount(0);
                 player.getWorld().playSound(player.getLocation(), Sound.ENTITY_ITEM_BREAK, 1, 1);
             }
@@ -168,10 +168,12 @@ public class NMS_v1_10_R1 implements NMS {
     @Override
     public org.bukkit.inventory.ItemStack addNBTKey(org.bukkit.inventory.ItemStack itemStack, String key) {
         ItemStack craftItemStack = CraftItemStack.asNMSCopy(itemStack);
-        NBTTagCompound nbtTagCompound = (craftItemStack.hasTag()) ? craftItemStack.getTag() : new NBTTagCompound();
+        NBTTagCompound nbtTagCompound = craftItemStack.hasTag() ? craftItemStack.getTag() : new NBTTagCompound();
 
-        nbtTagCompound.set(key, new NBTTagByte((byte) 1));
-        craftItemStack.setTag(nbtTagCompound);
+        if (nbtTagCompound != null) {
+            nbtTagCompound.set(key, new NBTTagByte((byte) 1));
+            craftItemStack.setTag(nbtTagCompound);
+        }
 
         return CraftItemStack.asBukkitCopy(craftItemStack);
     }
@@ -179,10 +181,12 @@ public class NMS_v1_10_R1 implements NMS {
     @Override
     public org.bukkit.inventory.ItemStack removeNBTKey(org.bukkit.inventory.ItemStack itemStack, String key) {
         ItemStack craftItemStack = CraftItemStack.asNMSCopy(itemStack);
-        NBTTagCompound nbtTagCompound = (craftItemStack.hasTag()) ? craftItemStack.getTag() : new NBTTagCompound();
+        NBTTagCompound nbtTagCompound = craftItemStack.hasTag() ? craftItemStack.getTag() : new NBTTagCompound();
 
-        nbtTagCompound.remove(key);
-        craftItemStack.setTag(nbtTagCompound);
+        if (nbtTagCompound != null) {
+            nbtTagCompound.remove(key);
+            craftItemStack.setTag(nbtTagCompound);
+        }
 
         return CraftItemStack.asBukkitCopy(craftItemStack);
     }
@@ -190,9 +194,9 @@ public class NMS_v1_10_R1 implements NMS {
     @Override
     public boolean hasNBTKey(org.bukkit.inventory.ItemStack itemStack, String key) {
         ItemStack craftItemStack = CraftItemStack.asNMSCopy(itemStack);
-        NBTTagCompound nbtTagCompound = (craftItemStack.hasTag()) ? craftItemStack.getTag() : new NBTTagCompound();
+        NBTTagCompound nbtTagCompound = craftItemStack.hasTag() ? craftItemStack.getTag() : new NBTTagCompound();
 
-        return nbtTagCompound.hasKey(key);
+        return nbtTagCompound != null && nbtTagCompound.hasKey(key);
     }
 
     @Override
@@ -249,7 +253,7 @@ public class NMS_v1_10_R1 implements NMS {
 
             boolean shouldCrit = cooldownOver
                     && entityPlayer.fallDistance > 0.0F
-                    && !player.isOnGround()
+                    && !entityPlayer.onGround
                     && !entityPlayer.isInWater()
                     && !entityPlayer.hasEffect(MobEffects.BLINDNESS)
                     && !entityPlayer.isPassenger()
@@ -266,11 +270,11 @@ public class NMS_v1_10_R1 implements NMS {
             boolean shouldSweep = false;
             double d0 = (entityPlayer.J - entityPlayer.I);
 
-            if (cooldownOver && !shouldCrit && !hasKnockedback && player.isOnGround()
+            if (cooldownOver && !shouldCrit && !hasKnockedback && entityPlayer.onGround
                     && d0 < (double) entityPlayer.cp()) {
                 ItemStack itemStack = entityPlayer.b(EnumHand.OFF_HAND);
 
-                if (itemStack.getItem() instanceof ItemSword) {
+                if (itemStack != null && itemStack.getItem() instanceof ItemSword) {
                     shouldSweep = true;
                 }
             }
@@ -308,11 +312,11 @@ public class NMS_v1_10_R1 implements NMS {
                 }
 
                 if (shouldSweep) {
-                    List list = entityPlayer.world.a(EntityLiving.class, nmsEntity.getBoundingBox().grow(1.0D, 0.25D, 1.0D));
-                    Iterator iterator = list.iterator();
+                    List<EntityLiving> list = entityPlayer.world.a(EntityLiving.class, nmsEntity.getBoundingBox().grow(1.0D, 0.25D, 1.0D));
+                    Iterator<EntityLiving> iterator = list.iterator();
 
                     while (iterator.hasNext()) {
-                        EntityLiving entityliving = (EntityLiving) iterator.next();
+                        EntityLiving entityliving = iterator.next();
                         if (entityliving != entityPlayer && entityliving != entity && !entityliving.r(entityliving) && entityliving.h(entityliving) < 9.0D && entityliving.damageEntity(DamageSource.playerAttack(entityPlayer), 1.0F)) {
                             entityliving.a(entityliving, 0.4F, MathHelper.sin(entityliving.yaw * 0.017453292F), -MathHelper.cos(entityliving.yaw * 0.017453292F));
                         }
@@ -424,7 +428,12 @@ public class NMS_v1_10_R1 implements NMS {
                     }
                 }
 
-                entityPlayer.applyExhaustion(entityPlayer.world.spigotConfig.combatExhaustion);
+                try {
+                    Class.forName("org.spigotmc.SpigotConfig");
+                    entityPlayer.applyExhaustion(entityPlayer.world.spigotConfig.combatExhaustion);
+                } catch (ClassNotFoundException ignored) {
+                    entityPlayer.applyExhaustion(0.1F);
+                }
             } else {
                 player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_ATTACK_NODAMAGE, 1.0F, 1.0F);
 

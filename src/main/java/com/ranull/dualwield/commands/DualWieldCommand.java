@@ -1,7 +1,7 @@
 package com.ranull.dualwield.commands;
 
 import com.ranull.dualwield.DualWield;
-import net.md_5.bungee.api.ChatColor;
+import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -15,11 +15,12 @@ public class DualWieldCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        String version = "2.4";
+        String version = "2.5";
         String author = "Ranull";
 
         if (args.length == 0) {
-            sender.sendMessage(ChatColor.AQUA + "\uD83D\uDDE1" + ChatColor.DARK_GRAY + " » " + ChatColor.AQUA + "DualWield " + ChatColor.GRAY + "v" + version);
+            sender.sendMessage(ChatColor.AQUA + "\uD83D\uDDE1" + ChatColor.DARK_GRAY + " » " + ChatColor.AQUA
+                    + "DualWield " + ChatColor.DARK_GRAY + "v" + version);
             sender.sendMessage(
                     ChatColor.GRAY + "/dualwield " + ChatColor.DARK_GRAY + "-" + ChatColor.RESET + " Plugin info");
 
@@ -28,7 +29,7 @@ public class DualWieldCommand implements CommandExecutor {
                         + " Reload plugin");
             }
 
-            sender.sendMessage(ChatColor.AQUA + "Author: " + ChatColor.GRAY + author);
+            sender.sendMessage(ChatColor.DARK_GRAY + "Author: " + ChatColor.GRAY + author);
         } else if (args[0].equals("reload")) {
             if (sender.hasPermission("dualwield.reload")) {
                 plugin.reloadConfig();
