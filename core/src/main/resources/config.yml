@@ -1,0 +1,32 @@
+config-version: 1
+
+settings:
+  swing:
+    air: true # Swing if an entity or block is not found.
+
+  attack:
+    hand: false # Attack when the player does not have anything in their off-hand.
+    standing: true # Attack when the player is standing.
+    sneaking: true # Attack when the player is sneaking.
+    cancel-event: true # Cancel the original attack event.
+    gamemode: # Attack when player is in these gamemodes.
+      - SURVIVAL
+      - CREATIVE
+      - ADVENTURE
+    blacklist:
+      - SHIELD
+      - BOW
+      - CROSSBOW
+
+  mine:
+    hand: false # Mine when the player does not have anything in their off-hand.
+    standing: true # Mine when the player is standing.
+    sneaking: true # Mine when the player is sneaking.
+    cancel-event: true # Cancel the original mine event.
+    gamemode: # Mine when player is in these gamemodes.
+      - SURVIVAL
+      - CREATIVE
+    blacklist:
+      - SHIELD
+      - BOW
+      - CROSSBOW
