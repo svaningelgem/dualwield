@@ -255,8 +255,7 @@ public final class DualWieldManager {
         ItemStack itemStack = player.getInventory().getItemInOffHand();
 
         return player.hasPermission("dualwield.attack")
-                && !plugin.getConfig().getStringList("settings.attack.blacklist")
-                .contains(itemStack.getType().toString())
+                && !attackBlacklistContains(itemStack.getType().name())
                 && ((itemStack.getType() != Material.AIR && !itemStack.getType().isBlock())
                 || (plugin.getConfig().getBoolean("settings.attack.hand") && itemStack.getType() == Material.AIR))
                 && ((player.isSneaking() && plugin.getConfig().getBoolean("settings.attack.sneaking"))
@@ -269,8 +268,7 @@ public final class DualWieldManager {
         ItemStack itemStack = player.getInventory().getItemInOffHand();
 
         return player.hasPermission("dualwield.mine")
-                && !plugin.getConfig().getStringList("settings.mine.blacklist")
-                .contains(itemStack.getType().toString())
+                && !mineBlacklistContains(itemStack.getType().name())
                 && ((itemStack.getType() != Material.AIR && !itemStack.getType().isBlock())
                 || (plugin.getConfig().getBoolean("settings.mine.hand") && itemStack.getType() == Material.AIR))
                 && ((player.isSneaking() && plugin.getConfig().getBoolean("settings.mine.sneaking"))
@@ -283,8 +281,7 @@ public final class DualWieldManager {
         ItemStack itemStack = player.getInventory().getItemInOffHand();
 
         return player.hasPermission("dualwield.attack")
-                && !plugin.getConfig().getStringList("settings.mine.blacklist")
-                .contains(itemStack.getType().toString())
+                && !attackBlacklistContains(itemStack.getType().name())
                 && plugin.getConfig().getBoolean("settings.swing.air")
                 && ((itemStack.getType() != Material.AIR && !itemStack.getType().isBlock())
                 || (plugin.getConfig().getBoolean("settings.attack.hand") && itemStack.getType() == Material.AIR))
@@ -292,5 +289,13 @@ public final class DualWieldManager {
                 || (!player.isSneaking() && plugin.getConfig().getBoolean("settings.attack.standing")))
                 && plugin.getConfig().getStringList("settings.attack.gamemode")
                 .contains(player.getGameMode().toString());
+    }
+
+    private boolean mineBlacklistContains(String string) {
+        return plugin.getConfig().getStringList("settings.mine.blacklist").contains(string);
+    }
+
+    private boolean attackBlacklistContains(String string) {
+        return plugin.getConfig().getStringList("settings.attack.blacklist").contains(string);
     }
 }

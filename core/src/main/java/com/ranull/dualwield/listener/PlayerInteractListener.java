@@ -21,17 +21,21 @@ public class PlayerInteractListener implements Listener {
         this.plugin = plugin;
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = false)
     public void onPlayerInteract(PlayerInteractEvent event) {
         Player player = event.getPlayer();
 
         if (event.getHand() == EquipmentSlot.OFF_HAND) {
             ItemStack itemStack = player.getInventory().getItemInOffHand();
 
-            if (event.getClickedBlock() != null && event.useInteractedBlock() != Event.Result.DENY) {
-                if (plugin.getDualWieldManager().shouldMine(player)) {
-                    if (player.getGameMode() != GameMode.CREATIVE || !itemStack.getType().name().contains("_SWORD")) {
-                        Block block = event.getClickedBlock();
+            if (event.getClickedBlock() != null && event.useInteractedBlock() != Event.Result.DENY
+                    && plugin.getDualWieldManager().shouldMine(player)) {
+                Block block = event.getClickedBlock();
+
+                if (!plugin.getConfig().getBoolean("settings.mine.correct-item")
+                        || plugin.getNMS().getToolStrength(block, itemStack) > 1) {
+                    if (player.getGameMode() != GameMode.CREATIVE || (!itemStack.getType().name().contains("_SWORD")
+                            && !itemStack.getType().name().equals("TRIDENT"))) {
                         BlockBreakData blockBreakData;
 
                         // Get blockBreakData
@@ -66,9 +70,9 @@ public class PlayerInteractListener implements Listener {
                         if (plugin.getConfig().getBoolean("settings.mine.cancel-event")) {
                             event.setCancelled(true);
                         }
-                    }
 
-                    plugin.getNMS().handAnimation(player, event.getHand());
+                        plugin.getNMS().handAnimation(player, event.getHand());
+                    }
                 }
             } else if (itemStack.getType() != Material.AIR && plugin.getDualWieldManager().shouldSwing(player)) {
                 plugin.getNMS().handAnimation(player, event.getHand());

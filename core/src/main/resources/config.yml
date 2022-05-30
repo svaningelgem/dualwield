@@ -2,31 +2,35 @@ config-version: 1
 
 settings:
   swing:
-    air: true # Swing if an entity or block is not found.
+    air: false # Swing if an entity or block is not found.
 
   attack:
     hand: false # Attack when the player does not have anything in their off-hand.
     standing: true # Attack when the player is standing.
     sneaking: true # Attack when the player is sneaking.
-    cancel-event: true # Cancel the original attack event.
-    gamemode: # Attack when player is in these gamemodes.
+    correct-item: true # Attack only with items that do damage.
+    cancel-event: true # Cancel the original right-click interact event.
+    gamemode: # Allow attacking when in these gamemodes.
       - SURVIVAL
       - CREATIVE
       - ADVENTURE
-    blacklist:
+    blacklist: # Blacklist items from being used to attack.
       - SHIELD
       - BOW
       - CROSSBOW
+      - FILLED_MAP
 
   mine:
     hand: false # Mine when the player does not have anything in their off-hand.
     standing: true # Mine when the player is standing.
     sneaking: true # Mine when the player is sneaking.
-    cancel-event: true # Cancel the original mine event.
-    gamemode: # Mine when player is in these gamemodes.
+    correct-item: true # Mine only with items that are meant to be used.
+    cancel-event: true # Cancel the original right-click interact event.
+    gamemode: # Allow mining when in these gamemodes.
       - SURVIVAL
-      - CREATIVE
-    blacklist:
+    blacklist: # Blacklist items from being used to mine.
       - SHIELD
       - BOW
       - CROSSBOW
+      - FILLED_MAP
+      - BONE_MEAL

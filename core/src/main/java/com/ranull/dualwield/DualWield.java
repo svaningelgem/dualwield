@@ -1,11 +1,13 @@
 package com.ranull.dualwield;
 
 import com.ranull.dualwield.command.DualWieldCommand;
-import com.ranull.dualwield.listener.*;
+import com.ranull.dualwield.listener.BlockBreakListener;
+import com.ranull.dualwield.listener.EntityDamageByEntityListener;
+import com.ranull.dualwield.listener.PlayerInteractEntityListener;
+import com.ranull.dualwield.listener.PlayerInteractListener;
 import com.ranull.dualwield.manager.DualWieldManager;
 import com.ranull.dualwield.manager.VersionManager;
 import com.ranull.dualwield.nms.NMS;
-import com.ranull.dualwield.update.UpdateChecker;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.entity.Entity;
@@ -47,18 +49,16 @@ public final class DualWield extends JavaPlugin {
     @Override
     public void onEnable() {
         if (setupNMS()) {
-            saveDefaultConfig();
-
             instance = this;
             dualWieldManager = new DualWieldManager(this);
             versionManager = new VersionManager(this);
 
+            saveDefaultConfig();
             registerMetrics();
             registerCommands();
             registerListeners();
-            getServer().getScheduler().runTask(this, this::updateChecker);
         } else {
-            getLogger().severe("Version not supported, disabling plugin!");
+            getLogger().severe("Version not supported, disabling plugin.");
             getServer().getPluginManager().disablePlugin(this);
         }
     }
@@ -87,28 +87,10 @@ public final class DualWield extends JavaPlugin {
         PluginCommand pluginCommand = getCommand("dualwield");
 
         if (pluginCommand != null) {
-            pluginCommand.setExecutor(new DualWieldCommand(this));
-        }
-    }
+            DualWieldCommand dualWieldCommand = new DualWieldCommand(this);
 
-    private void updateChecker() {
-        String response = new UpdateChecker(this, 82349).getVersion();
-
-        if (response != null) {
-            try {
-                double pluginVersion = Double.parseDouble(getDescription().getVersion());
-                double pluginVersionLatest = Double.parseDouble(response);
-
-                if (pluginVersion < pluginVersionLatest) {
-                    getLogger().info("Update: Outdated version detected " + pluginVersion + ", latest version is "
-                            + pluginVersionLatest + ", https://www.spigotmc.org/resources/dualwield.82349/");
-                }
-            } catch (NumberFormatException exception) {
-                if (!getDescription().getVersion().equalsIgnoreCase(response)) {
-                    getLogger().info("Update: Outdated version detected " + getDescription().getVersion()
-                            + ", latest version is " + response + ", https://www.spigotmc.org/resources/dualwield.82349/");
-                }
-            }
+            pluginCommand.setExecutor(dualWieldCommand);
+            pluginCommand.setTabCompleter(dualWieldCommand);
         }
     }
 
@@ -135,7 +117,7 @@ public final class DualWield extends JavaPlugin {
 
             return nms != null;
         } catch (ArrayIndexOutOfBoundsException | ClassNotFoundException | InstantiationException
-                | IllegalAccessException ignored) {
+                 | IllegalAccessException ignored) {
             return false;
         }
     }

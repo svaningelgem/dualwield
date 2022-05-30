@@ -10,7 +10,7 @@
 
     <parent>
         <groupId>com.ranull</groupId>
-        <artifactId>dualwield</artifactId>
+        <artifactId>dualwield-parent</artifactId>
         <version>${revision}</version>
     </parent>
 

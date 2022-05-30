@@ -104,7 +104,7 @@ public final class NMS_v1_16_R2 implements NMS {
         World nmsWorld = ((CraftWorld) block.getWorld()).getHandle();
         Block nmsBlock = nmsWorld.getType(new BlockPosition(block.getX(), block.getY(), block.getZ())).getBlock();
 
-        return nmsBlock.getBlockData().strength;
+        return nmsBlock.getBlockData().h(null, null);
     }
 
     @Override

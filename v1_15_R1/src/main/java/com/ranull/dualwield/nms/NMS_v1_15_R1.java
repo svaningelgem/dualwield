@@ -99,12 +99,13 @@ public final class NMS_v1_15_R1 implements NMS {
         return Sound.BLOCK_STONE_HIT;
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public float getBlockHardness(org.bukkit.block.Block block) {
         World nmsWorld = ((CraftWorld) block.getWorld()).getHandle();
         Block nmsBlock = nmsWorld.getType(new BlockPosition(block.getX(), block.getY(), block.getZ())).getBlock();
 
-        return nmsBlock.strength;
+        return nmsBlock.g(null, null, null);
     }
 
     @Override

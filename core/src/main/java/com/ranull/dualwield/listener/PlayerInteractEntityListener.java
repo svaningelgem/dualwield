@@ -26,14 +26,17 @@ public class PlayerInteractEntityListener implements Listener {
         if (event.getHand() == EquipmentSlot.OFF_HAND && plugin.getDualWieldManager().shouldAttack(player)) {
             ItemStack itemStack = player.getInventory().getItemInOffHand();
 
-            plugin.getDualWieldManager().attack(player, entity, event.getHand());
+            if (!plugin.getConfig().getBoolean("settings.attack.correct-item")
+                    || plugin.getNMS().getAttackDamage(itemStack) > 0) {
+                plugin.getDualWieldManager().attack(player, entity, event.getHand());
 
-            if (plugin.getConfig().getBoolean("settings.attack.cancel-event")) {
-                event.setCancelled(true);
-            }
+                if (plugin.getConfig().getBoolean("settings.attack.cancel-event")) {
+                    event.setCancelled(true);
+                }
 
-            if (itemStack.getType() == Material.AIR && plugin.getDualWieldManager().shouldSwing(player)) {
-                plugin.getNMS().handAnimation(player, event.getHand());
+                if (itemStack.getType() == Material.AIR && plugin.getDualWieldManager().shouldSwing(player)) {
+                    plugin.getNMS().handAnimation(player, event.getHand());
+                }
             }
         }
     }

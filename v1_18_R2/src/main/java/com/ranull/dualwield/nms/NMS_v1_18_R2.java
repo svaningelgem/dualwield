@@ -109,7 +109,7 @@ public final class NMS_v1_18_R2 implements NMS {
         ServerLevel serverLevel = ((CraftWorld) block.getWorld()).getHandle();
         Block nmsBlock = serverLevel.getBlockState(new BlockPos(block.getX(), block.getY(), block.getZ())).getBlock();
 
-        return nmsBlock.defaultBlockState().destroySpeed;
+        return nmsBlock.defaultBlockState().getDestroySpeed(null, null);
     }
 
     @Override
