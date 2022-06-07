@@ -34,3 +34,7 @@ settings:
       - CROSSBOW
       - FILLED_MAP
       - BONE_MEAL
+
+  integration:
+    mmoitems: # https://www.spigotmc.org/resources/mmoitems-premium.39267/
+      enabled: true # Should MMOItems integration be enabled.

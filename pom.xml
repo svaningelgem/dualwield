@@ -10,7 +10,7 @@
     <packaging>pom</packaging>
 
     <properties>
-        <revision>2.8</revision>
+        <revision>2.9</revision>
         <java.version>1.8</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
@@ -18,6 +18,7 @@
     <modules>
         <module>core</module>
         <module>dist</module>
+        <module>v1_19_R1</module>
         <module>v1_18_R2</module>
         <module>v1_18_R1</module>
         <module>v1_17_R1</module>

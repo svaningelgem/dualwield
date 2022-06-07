@@ -16,6 +16,8 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.lang.reflect.InvocationTargetException;
+
 public final class DualWield extends JavaPlugin {
     private static DualWield instance;
     private DualWieldManager dualWieldManager;
@@ -23,27 +25,31 @@ public final class DualWield extends JavaPlugin {
     private NMS nms;
 
     public static boolean shouldAttack(Player player) {
-        return instance.getDualWieldManager().shouldAttack(player);
+        return instance != null && instance.getDualWieldManager().shouldAttack(player);
     }
 
     public static boolean shouldSwing(Player player) {
-        return instance.getDualWieldManager().shouldSwing(player);
+        return instance != null && instance.getDualWieldManager().shouldSwing(player);
     }
 
     public static boolean shouldBreak(Player player) {
-        return instance.getDualWieldManager().shouldMine(player);
+        return instance != null && instance.getDualWieldManager().shouldMine(player);
     }
 
     public static boolean isDualWielding(Player player) {
-        return instance.getDualWieldManager().isDualWielding(player);
+        return instance != null && instance.getDualWieldManager().isDualWielding(player);
     }
 
     public static void attack(Player player, Entity entity) {
-        instance.getDualWieldManager().attack(player, entity, EquipmentSlot.HAND);
+        if (instance != null) {
+            instance.getDualWieldManager().attack(player, entity, EquipmentSlot.HAND);
+        }
     }
 
     public static void attack(Player player, Entity entity, EquipmentSlot equipmentSlot) {
-        instance.getDualWieldManager().attack(player, entity, equipmentSlot);
+        if (instance != null) {
+            instance.getDualWieldManager().attack(player, entity, equipmentSlot);
+        }
     }
 
     @Override
@@ -112,12 +118,12 @@ public final class DualWield extends JavaPlugin {
             Class<?> clazz = Class.forName("com.ranull.dualwield.nms.NMS_" + version);
 
             if (NMS.class.isAssignableFrom(clazz)) {
-                nms = (NMS) clazz.newInstance();
+                nms = (NMS) clazz.getDeclaredConstructor().newInstance();
             }
 
             return nms != null;
-        } catch (ArrayIndexOutOfBoundsException | ClassNotFoundException | InstantiationException
-                 | IllegalAccessException ignored) {
+        } catch (ArrayIndexOutOfBoundsException | ClassNotFoundException | InstantiationException |
+                 IllegalAccessException | NoSuchMethodException | InvocationTargetException ignored) {
             return false;
         }
     }
