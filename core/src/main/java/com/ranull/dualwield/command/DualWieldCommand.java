@@ -38,16 +38,15 @@ public final class DualWieldCommand implements CommandExecutor, TabExecutor {
             if (commandSender.hasPermission("dualwield.reload")) {
                 plugin.reloadConfig();
                 commandSender.sendMessage(ChatColor.AQUA + "\uD83D\uDDE1" + ChatColor.DARK_GRAY + " » "
-                        + ChatColor.RESET + "Reloaded config file!");
+                        + ChatColor.RESET + "Reloaded config file.");
             } else {
                 commandSender.sendMessage(ChatColor.AQUA + "\uD83D\uDDE1" + ChatColor.DARK_GRAY + " » "
-                        + ChatColor.RESET + "No Permission!");
+                        + ChatColor.RESET + "No permission.");
             }
         }
 
         return true;
     }
-
 
     @Override
     public List<String> onTabComplete(@NotNull CommandSender commandSender, @NotNull Command command,
