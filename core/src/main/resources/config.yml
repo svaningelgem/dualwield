@@ -1,36 +1,61 @@
-config-version: 1
+swing:
+  air: false # Swing if an entity or block is not found.
 
-settings:
-  swing:
-    air: false # Swing if an entity or block is not found.
+attack:
+  hand: false # Attack when the player does not have anything in their off-hand.
+  standing: true # Attack when the player is standing.
+  sneaking: true # Attack when the player is sneaking.
+  gamemodes: # Allow attacking when in these gamemodes.
+    - SURVIVAL
+    - CREATIVE
+    - ADVENTURE
 
-  attack:
-    hand: false # Attack when the player does not have anything in their off-hand.
-    standing: true # Attack when the player is standing.
-    sneaking: true # Attack when the player is sneaking.
-    correct-item: true # Attack only with items that do damage.
-    cancel-event: true # Cancel the original right-click interact event.
-    gamemode: # Allow attacking when in these gamemodes.
-      - SURVIVAL
-      - CREATIVE
-      - ADVENTURE
-    blacklist: # Blacklist items from being used to attack.
-      - SHIELD
-      - BOW
-      - CROSSBOW
-      - FILLED_MAP
+  events:
+    cancel:
+      original: true # Cancel the original right-click interact event.
 
-  mine:
-    hand: false # Mine when the player does not have anything in their off-hand.
-    standing: true # Mine when the player is standing.
-    sneaking: true # Mine when the player is sneaking.
-    correct-item: true # Mine only with items that are meant to be used.
-    cancel-event: true # Cancel the original right-click interact event.
-    gamemode: # Allow mining when in these gamemodes.
-      - SURVIVAL
-    blacklist: # Blacklist items from being used to mine.
-      - SHIELD
-      - BOW
-      - CROSSBOW
-      - FILLED_MAP
-      - BONE_MEAL
+  items:
+    correct: false # Attack only with items that do damage.
+    mode: BLACKLIST # BLACKLIST, WHITELIST.
+    list: # Blacklist items from being used to attack.
+      - "LEAD"
+      - "SHIELD"
+      - "SHEARS"
+      - "EGG"
+      - "SNOWBALL"
+      - "ENDER_PEARL"
+      - "(.*)SPAWN_EGG"
+      - "(.*)BUCKET"
+      - "(.*)POTION"
+      - "(.*)MAP"
+      - "(.*)BOW"
+      - "(.*)SEEDS"
+
+mine:
+  hand: false # Mine when the player does not have anything in their off-hand.
+  standing: true # Mine when the player is standing.
+  sneaking: true # Mine when the player is sneaking.
+  gamemodes: # Allow mining when in these gamemodes.
+    - SURVIVAL
+
+  events:
+    cancel:
+      original: true # Cancel the original right-click interact event.
+
+  items:
+    correct: false # Mine only with items that are meant to be used.
+    mode: BLACKLIST # BLACKLIST, WHITELIST.
+    list: # Blacklist items from being used to mine.
+      - "LEAD"
+      - "SHIELD"
+      - "EGG"
+      - "SNOWBALL"
+      - "ENDER_PEARL"
+      - "FIREWORK_ROCKET"
+      - "FLINT_AND_STEEL"
+      - "(.*)SPAWN_EGG"
+      - "(.*)BUCKET"
+      - "(.*)POTION"
+      - "(.*)MAP"
+      - "(.*)BOW"
+      - "(.*)SEEDS"
