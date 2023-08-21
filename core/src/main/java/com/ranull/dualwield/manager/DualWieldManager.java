@@ -17,6 +17,7 @@ import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.*;
+import java.util.regex.PatternSyntaxException;
 
 public final class DualWieldManager {
     private final DualWield plugin;
@@ -255,12 +256,12 @@ public final class DualWieldManager {
         ItemStack itemStack = player.getInventory().getItemInOffHand();
 
         return player.hasPermission("dualwield.attack")
-                && !attackBlacklistContains(itemStack.getType().name())
+                && shouldMaterialAttack(itemStack.getType().name())
                 && ((itemStack.getType() != Material.AIR && !itemStack.getType().isBlock())
-                || (plugin.getConfig().getBoolean("settings.attack.hand") && itemStack.getType() == Material.AIR))
-                && ((player.isSneaking() && plugin.getConfig().getBoolean("settings.attack.sneaking"))
-                || (!player.isSneaking() && plugin.getConfig().getBoolean("settings.attack.standing")))
-                && plugin.getConfig().getStringList("settings.attack.gamemode")
+                || (plugin.getConfig().getBoolean("attack.hand") && itemStack.getType() == Material.AIR))
+                && ((player.isSneaking() && plugin.getConfig().getBoolean("attack.sneaking"))
+                || (!player.isSneaking() && plugin.getConfig().getBoolean("attack.standing")))
+                && plugin.getConfig().getStringList("attack.gamemodes")
                 .contains(player.getGameMode().toString());
     }
 
@@ -268,12 +269,12 @@ public final class DualWieldManager {
         ItemStack itemStack = player.getInventory().getItemInOffHand();
 
         return player.hasPermission("dualwield.mine")
-                && !mineBlacklistContains(itemStack.getType().name())
+                && shouldMaterialMine(itemStack.getType().name())
                 && ((itemStack.getType() != Material.AIR && !itemStack.getType().isBlock())
-                || (plugin.getConfig().getBoolean("settings.mine.hand") && itemStack.getType() == Material.AIR))
-                && ((player.isSneaking() && plugin.getConfig().getBoolean("settings.mine.sneaking"))
-                || (!player.isSneaking() && plugin.getConfig().getBoolean("settings.mine.standing")))
-                && plugin.getConfig().getStringList("settings.mine.gamemode")
+                || (plugin.getConfig().getBoolean("mine.hand") && itemStack.getType() == Material.AIR))
+                && ((player.isSneaking() && plugin.getConfig().getBoolean("mine.sneaking"))
+                || (!player.isSneaking() && plugin.getConfig().getBoolean("mine.standing")))
+                && plugin.getConfig().getStringList("mine.gamemodes")
                 .contains(player.getGameMode().toString());
     }
 
@@ -281,21 +282,39 @@ public final class DualWieldManager {
         ItemStack itemStack = player.getInventory().getItemInOffHand();
 
         return player.hasPermission("dualwield.attack")
-                && !attackBlacklistContains(itemStack.getType().name())
-                && plugin.getConfig().getBoolean("settings.swing.air")
+                && shouldMaterialAttack(itemStack.getType().name())
+                && plugin.getConfig().getBoolean("swing.air")
                 && ((itemStack.getType() != Material.AIR && !itemStack.getType().isBlock())
-                || (plugin.getConfig().getBoolean("settings.attack.hand") && itemStack.getType() == Material.AIR))
-                && ((player.isSneaking() && plugin.getConfig().getBoolean("settings.attack.sneaking"))
-                || (!player.isSneaking() && plugin.getConfig().getBoolean("settings.attack.standing")))
-                && plugin.getConfig().getStringList("settings.attack.gamemode")
+                || (plugin.getConfig().getBoolean("attack.hand") && itemStack.getType() == Material.AIR))
+                && ((player.isSneaking() && plugin.getConfig().getBoolean("attack.sneaking"))
+                || (!player.isSneaking() && plugin.getConfig().getBoolean("attack.standing")))
+                && plugin.getConfig().getStringList("attack.gamemodes")
                 .contains(player.getGameMode().toString());
     }
 
-    private boolean mineBlacklistContains(String string) {
-        return plugin.getConfig().getStringList("settings.mine.blacklist").contains(string);
+    private boolean shouldMaterialMine(String string) {
+        String mode = plugin.getConfig().getString("mine.items.mode", "BLACKLIST");
+        List<String> stringList = plugin.getConfig().getStringList("mine.items.list");
+
+        return (mode.equalsIgnoreCase("whitelist") && stringListMatches(stringList, string))
+                || (mode.equalsIgnoreCase("blacklist") && !stringListMatches(stringList, string));
     }
 
-    private boolean attackBlacklistContains(String string) {
-        return plugin.getConfig().getStringList("settings.attack.blacklist").contains(string);
+    private boolean shouldMaterialAttack(String string) {
+        String mode = plugin.getConfig().getString("attack.items.mode", "BLACKLIST");
+        List<String> stringList = plugin.getConfig().getStringList("attack.items.list");
+
+        return (mode.equalsIgnoreCase("whitelist") && stringListMatches(stringList, string))
+                || (mode.equalsIgnoreCase("blacklist") && !stringListMatches(stringList, string));
+    }
+
+    private boolean stringListMatches(List<String> stringList, String string) {
+        try {
+            return stringList.stream().anyMatch(string::matches);
+        } catch (PatternSyntaxException exception) {
+            plugin.getLogger().warning("Misconfiguration: " + exception.getMessage());
+        }
+
+        return false;
     }
 }

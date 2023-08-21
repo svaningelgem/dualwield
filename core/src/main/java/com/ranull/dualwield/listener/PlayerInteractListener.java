@@ -21,7 +21,7 @@ public class PlayerInteractListener implements Listener {
         this.plugin = plugin;
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = false)
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerInteract(PlayerInteractEvent event) {
         Player player = event.getPlayer();
 
@@ -32,7 +32,7 @@ public class PlayerInteractListener implements Listener {
                     && plugin.getDualWieldManager().shouldMine(player)) {
                 Block block = event.getClickedBlock();
 
-                if (!plugin.getConfig().getBoolean("settings.mine.correct-item")
+                if (!plugin.getConfig().getBoolean("mine.items.correct")
                         || plugin.getNMS().getToolStrength(block, itemStack) > 1) {
                     if (player.getGameMode() != GameMode.CREATIVE || (!itemStack.getType().name().contains("_SWORD")
                             && !itemStack.getType().name().equals("TRIDENT"))) {
@@ -67,7 +67,7 @@ public class PlayerInteractListener implements Listener {
                             plugin.getDualWieldManager().removeBlockBreakData(blockBreakData);
                         }
 
-                        if (plugin.getConfig().getBoolean("settings.mine.cancel-event")) {
+                        if (plugin.getConfig().getBoolean("mine.events.cancel.original")) {
                             event.setCancelled(true);
                         }
 
