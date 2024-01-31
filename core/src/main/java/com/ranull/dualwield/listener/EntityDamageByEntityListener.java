@@ -15,7 +15,7 @@ public class EntityDamageByEntityListener implements Listener {
         this.plugin = plugin;
     }
 
-    @EventHandler(priority = EventPriority.LOWEST)
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onEntityDamageByEntity(EntityDamageByEntityEvent event) {
         if (event.getDamager() instanceof Player
                 && plugin.getDualWieldManager().isDualWielding(event.getDamager())) {
