@@ -1,0 +1,53 @@
+name: Maven Release
+
+on:
+  release:
+    types: [created]
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'adopt'
+
+      - name: Set outputs
+        id: version
+        run: |
+          TAG=${GITHUB_REF#refs/tags/}
+          CURRENT_VERSION="${TAG#v}"
+
+          echo "TAG=$TAG" >> "$GITHUB_ENV"
+          echo "CURRENT_VERSION=$CURRENT_VERSION" >> "$GITHUB_ENV"
+
+      - name: Cache Maven packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2
+          key: m2-cache
+          restore-keys: m2-cache
+          save-always: true
+
+      - name: Deploy the jar file
+        run: mvn --batch-mode -Drevision=${CURRENT_VERSION} clean deploy
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Add jar file to release
+        run: gh release upload "${TAG}" "target/Graves-${CURRENT_VERSION}.jar" --clobber
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
