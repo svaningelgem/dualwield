@@ -11,7 +11,7 @@
     </properties>
 
     <parent>
-        <groupId>com.ranull</groupId>
+        <groupId>org.avarion</groupId>
         <artifactId>dualwield-parent</artifactId>
         <version>${revision}</version>
     </parent>
@@ -25,7 +25,7 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>com.ranull</groupId>
+            <groupId>org.avarion</groupId>
             <artifactId>dualwield-core</artifactId>
             <version>${project.parent.version}</version>
         </dependency>

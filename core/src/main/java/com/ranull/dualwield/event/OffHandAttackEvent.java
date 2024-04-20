@@ -1,4 +1,4 @@
-package com.ranull.dualwield.event;
+package org.avarion.dualwield.event;
 
 import org.bukkit.entity.Entity;
 import org.bukkit.event.HandlerList;

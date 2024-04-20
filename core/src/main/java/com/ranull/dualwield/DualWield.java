@@ -1,13 +1,13 @@
-package com.ranull.dualwield;
+package org.avarion.dualwield;
 
-import com.ranull.dualwield.command.DualWieldCommand;
-import com.ranull.dualwield.listener.BlockBreakListener;
-import com.ranull.dualwield.listener.EntityDamageByEntityListener;
-import com.ranull.dualwield.listener.PlayerInteractEntityListener;
-import com.ranull.dualwield.listener.PlayerInteractListener;
-import com.ranull.dualwield.manager.DualWieldManager;
-import com.ranull.dualwield.manager.VersionManager;
-import com.ranull.dualwield.nms.NMS;
+import org.avarion.dualwield.command.DualWieldCommand;
+import org.avarion.dualwield.listener.BlockBreakListener;
+import org.avarion.dualwield.listener.EntityDamageByEntityListener;
+import org.avarion.dualwield.listener.PlayerInteractEntityListener;
+import org.avarion.dualwield.listener.PlayerInteractListener;
+import org.avarion.dualwield.manager.DualWieldManager;
+import org.avarion.dualwield.manager.VersionManager;
+import org.avarion.dualwield.nms.NMS;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.entity.Entity;
@@ -115,7 +115,7 @@ public final class DualWield extends JavaPlugin {
     private boolean setupNMS() {
         try {
             String version = getServer().getClass().getPackage().getName().split("\\.")[3];
-            Class<?> clazz = Class.forName("com.ranull.dualwield.nms.NMS_" + version);
+            Class<?> clazz = Class.forName("org.avarion.dualwield.nms.NMS_" + version);
 
             if (NMS.class.isAssignableFrom(clazz)) {
                 nms = (NMS) clazz.getDeclaredConstructor().newInstance();

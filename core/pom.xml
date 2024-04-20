@@ -10,7 +10,7 @@
     </properties>
 
     <parent>
-        <groupId>com.ranull</groupId>
+        <groupId>org.avarion</groupId>
         <artifactId>dualwield-parent</artifactId>
         <version>${revision}</version>
     </parent>
@@ -44,7 +44,7 @@
                     <relocations>
                         <relocation>
                             <pattern>org.bstats</pattern>
-                            <shadedPattern>com.ranull.dualwield.bstats</shadedPattern>
+                            <shadedPattern>org.avarion.dualwield.bstats</shadedPattern>
                         </relocation>
                     </relocations>
                 </configuration>

@@ -1,4 +1,4 @@
-package com.ranull.dualwield.manager;
+package org.avarion.dualwield.manager;
 
 import org.bukkit.plugin.java.JavaPlugin;
 

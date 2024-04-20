@@ -5,109 +5,109 @@
     <artifactId>dualwield-dist</artifactId>
 
     <parent>
-        <groupId>com.ranull</groupId>
+        <groupId>org.avarion</groupId>
         <artifactId>dualwield-parent</artifactId>
         <version>${revision}</version>
     </parent>
 
     <dependencies>
         <dependency>
-            <groupId>com.ranull</groupId>
+            <groupId>org.avarion</groupId>
             <artifactId>dualwield-core</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.ranull</groupId>
+            <groupId>org.avarion</groupId>
             <artifactId>dualwield-v1_20_R1</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.ranull</groupId>
+            <groupId>org.avarion</groupId>
             <artifactId>dualwield-v1_19_R3</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.ranull</groupId>
+            <groupId>org.avarion</groupId>
             <artifactId>dualwield-v1_19_R2</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.ranull</groupId>
+            <groupId>org.avarion</groupId>
             <artifactId>dualwield-v1_19_R1</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.ranull</groupId>
+            <groupId>org.avarion</groupId>
             <artifactId>dualwield-v1_18_R2</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.ranull</groupId>
+            <groupId>org.avarion</groupId>
             <artifactId>dualwield-v1_18_R1</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.ranull</groupId>
+            <groupId>org.avarion</groupId>
             <artifactId>dualwield-v1_17_R1</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.ranull</groupId>
+            <groupId>org.avarion</groupId>
             <artifactId>dualwield-v1_16_R3</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.ranull</groupId>
+            <groupId>org.avarion</groupId>
             <artifactId>dualwield-v1_16_R2</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.ranull</groupId>
+            <groupId>org.avarion</groupId>
             <artifactId>dualwield-v1_16_R1</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.ranull</groupId>
+            <groupId>org.avarion</groupId>
             <artifactId>dualwield-v1_15_R1</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.ranull</groupId>
+            <groupId>org.avarion</groupId>
             <artifactId>dualwield-v1_14_R1</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.ranull</groupId>
+            <groupId>org.avarion</groupId>
             <artifactId>dualwield-v1_13_R2</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.ranull</groupId>
+            <groupId>org.avarion</groupId>
             <artifactId>dualwield-v1_13_R1</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.ranull</groupId>
+            <groupId>org.avarion</groupId>
             <artifactId>dualwield-v1_12_R1</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.ranull</groupId>
+            <groupId>org.avarion</groupId>
             <artifactId>dualwield-v1_11_R1</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.ranull</groupId>
+            <groupId>org.avarion</groupId>
             <artifactId>dualwield-v1_10_R1</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.ranull</groupId>
+            <groupId>org.avarion</groupId>
             <artifactId>dualwield-v1_9_R2</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.ranull</groupId>
+            <groupId>org.avarion</groupId>
             <artifactId>dualwield-v1_9_R1</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
@@ -132,7 +132,7 @@
                     <relocations>
                         <relocation>
                             <pattern>org.bstats</pattern>
-                            <shadedPattern>com.ranull.dualwield.bstats</shadedPattern>
+                            <shadedPattern>org.avarion.dualwield.bstats</shadedPattern>
                         </relocation>
                     </relocations>
                 </configuration>
