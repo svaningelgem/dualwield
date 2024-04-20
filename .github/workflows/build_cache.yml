@@ -1,0 +1,53 @@
+# Idea from: https://medium.com/@everton.spader/how-to-cache-package-dependencies-between-branches-with-github-actions-e6a19f33783a
+# --> Build the cache in the master branch, then it should be available to all others as well!
+
+name: Maven Build
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache Maven packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2
+          key: m2-cache
+          save-always: true
+
+      - name: Cache Pip Packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: pip-cache
+          save-always: true
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'adopt'
+          cache: 'maven'
+          java-version: |
+            8
+            16
+            17
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: install requests
+        run: pip install -r requirements.txt
+
+      - name: Build necessary remapped spigot libraries into the .m2 cache
+        run: python .github/scripts/build_remapped_jars.py
+
+      - name: Build project with Maven
+        run: mvn --batch-mode clean verify
