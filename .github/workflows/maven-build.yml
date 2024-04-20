@@ -16,14 +16,14 @@ jobs:
         with:
           path: ~/.m2
           key: m2-cache
-          restore-keys: m2-cache
+          restore-keys: m2-cache-
 
       - name: Cache Pip Packages
         uses: actions/cache/restore@v4
         with:
           path: ~/.cache/pip
           key: pip-cache
-          restore-keys: pip-cache
+          restore-keys: pip-cache-
 
       - name: Set up JDK
         uses: actions/setup-java@v4
