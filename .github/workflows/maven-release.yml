@@ -27,7 +27,7 @@ jobs:
           restore-keys: m2-cache-
 
       - name: Cache Pip Packages
-        uses: actions/cache/restore@v4-
+        uses: actions/cache/restore@v4
         with:
           path: ~/.cache/pip
           key: pip-cache
