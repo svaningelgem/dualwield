@@ -19,7 +19,7 @@ jobs:
         with:
           path: ~/.m2
           key: m2-cache-${{ github.run_id }}
-          restore-keys: m2-cache
+          restore-keys: m2-cache-
           save-always: true
 
       - name: Cache Pip Packages
@@ -27,14 +27,13 @@ jobs:
         with:
           path: ~/.cache/pip
           key: pip-cache-${{ github.run_id }}
-          restore-keys: pip-cache
+          restore-keys: pip-cache-
           save-always: true
 
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
           distribution: 'adopt'
-          cache: 'maven'
           java-version: |
             8
             16
