@@ -13,6 +13,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: 'adopt'
+          cache: 'maven'
           java-version: |
             8
             16
