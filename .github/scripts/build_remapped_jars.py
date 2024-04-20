@@ -1,85 +1,98 @@
 #!env python
 """
 You'll need these versions to compile the server jars:
-```bash
-apt install openjdk-8-jdk openjdk-16-jdk openjdk-17-jdk
-```
-
 # Java 8: 1.9 -> 1.16
 # Java 16: 1.17
 # Java 17: 1.18+
 """
+import logging
 import os
 import re
-from datetime import datetime
+import subprocess
 from functools import lru_cache
 from pathlib import Path
 
 import requests
 
+logging.basicConfig(format="[%(asctime)s] [%(levelname)s] %(message)s", level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 java_versions_needed = {
-  '1_9_': 8,
-  '1_10_': 8,
-  '1_11_': 8,
-  '1_12_': 8,
-  '1_13_': 8,
-  '1_14_': 8,
-  '1_15_': 8,
-  '1_16_': 8,
-  '1_17_': 16,
-  '1_18_': 17,
-  '1_19_': 17,
-  '1_20_': 17,
+    '9': 8,
+    '10': 8,
+    '11': 8,
+    '12': 8,
+    '13': 8,
+    '14': 8,
+    '15': 8,
+    '16': 8,
+    '17': 16,
+    '18': 17,
+    '19': 17,
+    '20': 17,
 }
-__root__ = Path(__file__).parent.parent.parent.resolve().absolute()
+__dir__ = Path(__file__).parent.resolve().absolute()
+__root__ = __dir__.parent.parent
+m2_buildtools = Path.home().joinpath('.m2/BuildTools.jar').resolve().absolute()
 
 
-@lru_cache(1)
-def available_versions() -> list[str]:
-  content = requests.get("https://hub.spigotmc.org/versions/").text
-  return re.findall(r'href="(\d+\.\d+(?:\.\d+)?)\.json"', content)
+def find_version_to_build(directory: Path) -> tuple[str, str]:
+    pom = directory.joinpath('pom.xml').read_text()
+    return re.search(r'<spigot.version>\s*((.*)-R0.1-SNAPSHOT)\s*</spigot.version>', pom).groups()
 
 
-def find_version_to_build(directory_name: str) -> str:
-  new_name = re.sub(r'v1_(\d+)_R(\d+)', r'1.\1.\2', directory_name)
-  if new_name in available_versions():
-    return new_name
+def get_java_path(version: str) -> str:
+    minor = version.split('.')[1]
+    java_version = java_versions_needed[minor]
 
-  if new_name.endswith(".1"):
-    new_name = new_name[:-2]
-    if new_name in available_versions():
-      return new_name
+    java_path = os.getenv(f'JAVA_HOME_{java_version}_X64')
+    if not java_path:
+        raise Exception(f"No JAVA_HOME found for version {version}")
 
-  raise Exception(f"{new_name} isn't known to spigot?")
+    return java_path + '/bin/java'
 
 
-for directory in __root__.glob('v1_*'):
-  rev = find_version_to_build(directory.name)
-  minor = directory.name.split('_')[1]
-  java_version = java_versions_needed[minor]
-  java_path = os.getenv(f'JAVA_HOME_{java_version}_X64') + '/bin/java'
+def run_build_tools(version: str, spigot_needed: str) -> None:
+    m2_location = Path.home() / f'.m2/repository/org/spigotmc/spigot/{spigot_needed}/spigot-{spigot_needed}.jar'
+    if m2_location.exists():
+        logger.info(" > Already built.")
+        return
 
-# :for version in get_versions():
-#   print(datetime.now(), "Trying to build:", version)
-#
-#     declare -x JAVA_HOME_11_X64="/usr/lib/jvm/temurin-11-jdk-amd64"
-# declare -x JAVA_HOME_16_X64="/opt/hostedtoolcache/Java_Adopt_jdk/16.0.2-7/x64"
-# declare -x JAVA_HOME_17_X64="/opt/hostedtoolcache/Java_Adopt_jdk/17.0.10-7/x64"
-# declare -x JAVA_HOME_21_X64="/usr/lib/jvm/temurin-21-jdk-amd64"
-# declare -x JAVA_HOME_8_X64="/opt/hostedtoolcache/Java_Adopt_jdk/8.0.402-6/x64"
-#
-#
-#
-# for version in $available_versions;
-# do
-#   echo "[$(date)] Trying to build: $version"
-#
-#   major=$(echo "$version" | cut -d '.' -f 2)
-#   if [[ $major -lt 17 ]]; then
-#     /usr/lib/jvm/java-8-openjdk-amd64/bin/java -jar BuildTools.jar --remapped --rev "$version" > "log.$version.txt" 2>&1
-#   else
-#     /usr/lib/jvm/java-17-openjdk-amd64/bin/java -jar BuildTools.jar --remapped --rev "$version" > "log.$version.txt" 2>&1
-#   fi;
-#   echo "[$(date)] Result: $?"
-# done
+    command = [
+        get_java_path(version=version),
+        "-jar",
+        m2_buildtools,
+        "--remapped",
+        "--rev",
+        version
+    ]
+
+    with open(__dir__ / f"log.{version}.txt", "w") as file:
+        logger.info(f" > .. building")
+        subprocess.run(command, stdout=file, stderr=subprocess.STDOUT, check=True)
+        logger.info(f" > .. finished")
+
+
+def prepare_build_tools():
+    logging.info("Checking if BuildTools.jar exists:")
+    if m2_buildtools.exists():
+        logging.info(" .. OK!")
+        return
+
+    logging.info(" .. downloading")
+    response = requests.get('https://hub.spigotmc.org/jenkins/job/BuildTools/lastSuccessfulBuild/artifact/target/BuildTools.jar')
+    m2_buildtools.write_bytes(response.content)
+    logging.info(" .. done")
+
+    return m2_buildtools
+
+
+if __name__ == '__main__':
+    prepare_build_tools()
+
+    for directory in __root__.glob('v1_*'):
+        logger.info("Found directory '%s'", directory.name)
+        spigot_needed, full_version = find_version_to_build(directory)
+
+        logger.info(f" > Corresponding spigot version: %s", full_version)
+        run_build_tools(version=full_version, spigot_needed=spigot_needed)

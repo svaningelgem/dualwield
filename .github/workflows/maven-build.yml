@@ -14,8 +14,21 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
-          java-version: '17'
           distribution: 'adopt'
+          cache: 'maven'
+          java-version: |
+            8
+            16
+            17
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: install requests
+        run: pip install requests
 
       - name: Cache Maven packages
         uses: actions/cache@v4
@@ -25,5 +38,8 @@ jobs:
           restore-keys: m2-cache
           save-always: true
 
-      - name: Build with Maven
+      - name: Build necessary remapped spigot libraries into the .m2 cache
+        run: python .github/scripts/build_remapped_jars.py
+
+      - name: Build project with Maven
         run: mvn --batch-mode clean verify
