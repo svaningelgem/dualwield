@@ -8,6 +8,7 @@ import org.avarion.dualwield.listener.PlayerInteractListener;
 import org.avarion.dualwield.manager.DualWieldManager;
 import org.avarion.dualwield.manager.VersionManager;
 import org.avarion.dualwield.nms.NMS;
+import org.avarion.dualwield.util.UpdateUtil;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.entity.Entity;
@@ -60,11 +61,13 @@ public final class DualWield extends JavaPlugin {
             versionManager = new VersionManager(this);
 
             saveDefaultConfig();
-            registerMetrics();
+            registerBStats();
             registerCommands();
             registerListeners();
+
+            runUpdateChecker();
         } else {
-            getLogger().severe("Version not supported, disabling plugin.");
+            getLogger().severe("Server version not supported, I am going to disable this plugin.");
             getServer().getPluginManager().disablePlugin(this);
         }
     }
@@ -72,11 +75,37 @@ public final class DualWield extends JavaPlugin {
     @Override
     public void onDisable() {
         unregisterListeners();
+
+        instance = null;
+        dualWieldManager = null;
+        versionManager = null;
     }
 
-    private void registerMetrics() {
-        new Metrics(this, 12853);
+    private void runUpdateChecker() {
+        getServer().getScheduler().runTaskAsynchronously(this, () -> {
+            if ( !getConfig().getBoolean("settings.update.check") ) return;
+
+            String currentVersion = getDescription().getVersion();
+            String latestVersion = UpdateUtil.getLatestVersion(getSpigotID());
+            if (currentVersion.equals(latestVersion)) return;
+            if (latestVersion == null) return;
+
+            try {
+                double pluginVersion = Double.parseDouble(currentVersion);
+                double pluginVersionLatest = Double.parseDouble(latestVersion);
+
+                if (pluginVersion >= pluginVersionLatest) return;
+            } catch (NumberFormatException ignored) {
+            }
+
+            getLogger().info(String.format("Update: Outdated version detected %s, latest version is %s, https://www.spigotmc.org/resources/%d/", currentVersion, latestVersion, getSpigotID()));
+        });
     }
+
+    private int getSpigotID() { return 123; }
+    private int getBStatsID() { return 21641; }
+
+    private void registerBStats() { new Metrics(this, getBStatsID()); }
 
     public void registerListeners() {
         getServer().getPluginManager().registerEvents(new PlayerInteractListener(this), this);
