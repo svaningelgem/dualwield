@@ -19,6 +19,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Cache Maven packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2
+          key: m2-cache
+          save-always: true
+
+      - name: Cache Pip Packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: pip-cache
+          save-always: true
+
       - name: Set outputs
         id: version
         run: |
@@ -32,7 +46,6 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: 'adopt'
-          cache: 'maven'
           java-version: |
             8
             16
@@ -42,18 +55,9 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-          cache: 'pip'
 
       - name: install requests
         run: pip install -r requirements.txt
-
-      - name: Cache Maven packages
-        uses: actions/cache@v4
-        with:
-          path: ~/.m2
-          key: m2-cache
-          restore-keys: m2-cache
-          save-always: true
 
       - name: Build necessary remapped spigot libraries into the .m2 cache
         run: python .github/scripts/build_remapped_jars.py

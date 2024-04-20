@@ -33,7 +33,7 @@ public final class DualWieldCommand implements CommandExecutor, TabExecutor {
                         + ChatColor.RESET + " Reload plugin");
             }
 
-            commandSender.sendMessage(ChatColor.DARK_GRAY + "Author: " + ChatColor.AQUA + "Ranull");
+            commandSender.sendMessage(ChatColor.DARK_GRAY + "Authors: " + ChatColor.AQUA + "Ranull, svaningelgem");
         } else if (args[0].equals("reload")) {
             if (commandSender.hasPermission("dualwield.reload")) {
                 plugin.saveDefaultConfig();
