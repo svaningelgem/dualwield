@@ -19,4 +19,7 @@ jobs:
             17
 
       - name: Finding javas
-        run: find / -type f -name java
+        run: find / -type f -name java 2>/dev/null || true
+
+      - name: environment
+        run: export
