@@ -9,7 +9,7 @@ defaults:
     shell: bash
 
 jobs:
-  build-and-publish:
+  release:
     runs-on: ubuntu-latest
 
     permissions:
@@ -18,12 +18,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-
-      - name: Set up JDK
-        uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: 'adopt'
 
       - name: Set outputs
         id: version
@@ -34,6 +28,25 @@ jobs:
           echo "TAG=$TAG" >> "$GITHUB_ENV"
           echo "CURRENT_VERSION=$CURRENT_VERSION" >> "$GITHUB_ENV"
 
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'adopt'
+          cache: 'maven'
+          java-version: |
+            8
+            16
+            17
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: install requests
+        run: pip install -r requirements.txt
+
       - name: Cache Maven packages
         uses: actions/cache@v4
         with:
@@ -42,12 +55,15 @@ jobs:
           restore-keys: m2-cache
           save-always: true
 
+      - name: Build necessary remapped spigot libraries into the .m2 cache
+        run: python .github/scripts/build_remapped_jars.py
+
       - name: Deploy the jar file
         run: mvn --batch-mode -Drevision=${CURRENT_VERSION} clean deploy
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Add jar file to release
-        run: gh release upload "${TAG}" "target/Graves-${CURRENT_VERSION}.jar" --clobber
+        run: gh release upload "${TAG}" "target/dualwield-${CURRENT_VERSION}.jar" --clobber
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

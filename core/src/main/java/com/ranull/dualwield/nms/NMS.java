@@ -1,4 +1,4 @@
-package com.ranull.dualwield.nms;
+package org.avarion.dualwield.nms;
 
 import org.bukkit.Sound;
 import org.bukkit.block.Block;

@@ -1,6 +1,6 @@
-package com.ranull.dualwield.listener;
+package org.avarion.dualwield.listener;
 
-import com.ranull.dualwield.DualWield;
+import org.avarion.dualwield.DualWield;
 import org.bukkit.Material;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;

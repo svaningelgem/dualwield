@@ -1,7 +1,7 @@
-package com.ranull.dualwield.manager;
+package org.avarion.dualwield.manager;
 
-import com.ranull.dualwield.DualWield;
-import com.ranull.dualwield.data.BlockBreakData;
+import org.avarion.dualwield.DualWield;
+import org.avarion.dualwield.data.BlockBreakData;
 import org.bukkit.Effect;
 import org.bukkit.GameMode;
 import org.bukkit.Location;

@@ -1,7 +1,7 @@
-package com.ranull.dualwield.listener;
+package org.avarion.dualwield.listener;
 
-import com.ranull.dualwield.DualWield;
-import com.ranull.dualwield.data.BlockBreakData;
+import org.avarion.dualwield.DualWield;
+import org.avarion.dualwield.data.BlockBreakData;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.block.Block;

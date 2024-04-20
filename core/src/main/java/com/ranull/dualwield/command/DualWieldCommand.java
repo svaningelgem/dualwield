@@ -1,6 +1,6 @@
-package com.ranull.dualwield.command;
+package org.avarion.dualwield.command;
 
-import com.ranull.dualwield.DualWield;
+import org.avarion.dualwield.DualWield;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;

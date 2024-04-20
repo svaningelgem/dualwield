@@ -1,4 +1,4 @@
-package com.ranull.dualwield.nms;
+package org.avarion.dualwield.nms;
 
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;

@@ -1,4 +1,4 @@
-package com.ranull.dualwield.data;
+package org.avarion.dualwield.data;
 
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;

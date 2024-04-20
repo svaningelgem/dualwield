@@ -1,7 +1,7 @@
 name: ${project.parent.name}
 description: ${project.description}
 version: ${project.version}
-main: com.ranull.dualwield.DualWield
+main: org.avarion.dualwield.DualWield
 author: Ranull
 api-version: 1.13
 

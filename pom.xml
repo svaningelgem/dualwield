@@ -3,7 +3,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.ranull</groupId>
+    <groupId>org.avarion</groupId>
     <artifactId>dualwield-parent</artifactId>
     <name>DualWield</name>
     <description>Off-hand attacking and tool usage, use your weapons and tools in the off-hand.</description>
@@ -13,7 +13,11 @@
     <developers>
         <developer>
             <name>Ranull</name>
-            <url>https://gitlab.com/ranull/minecraft/dualwield/</url>
+            <url>https://gitlab.com/ranull/</url>
+        </developer>
+        <developer>
+            <name>Steven "KaReL" Van Ingelgem</name>
+            <url>https://github.com/svaningelgem/</url>
         </developer>
     </developers>
 

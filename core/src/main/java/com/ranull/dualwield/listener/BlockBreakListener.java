@@ -1,7 +1,7 @@
-package com.ranull.dualwield.listener;
+package org.avarion.dualwield.listener;
 
-import com.ranull.dualwield.DualWield;
-import com.ranull.dualwield.event.OffHandBlockBreakEvent;
+import org.avarion.dualwield.DualWield;
+import org.avarion.dualwield.event.OffHandBlockBreakEvent;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
