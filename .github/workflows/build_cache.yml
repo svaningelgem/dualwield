@@ -1,7 +1,7 @@
 # Idea from: https://medium.com/@everton.spader/how-to-cache-package-dependencies-between-branches-with-github-actions-e6a19f33783a
 # --> Build the cache in the master branch, then it should be available to all others as well!
 
-name: Maven Build
+name: Build Cache On Master
 
 on:
   push:
