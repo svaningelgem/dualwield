@@ -18,6 +18,16 @@
         </dependency>
         <dependency>
             <groupId>org.avarion</groupId>
+            <artifactId>dualwield-v1_20_R4</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.avarion</groupId>
+            <artifactId>dualwield-v1_20_R2</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.avarion</groupId>
             <artifactId>dualwield-v1_20_R1</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
