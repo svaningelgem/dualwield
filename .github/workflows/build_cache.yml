@@ -15,12 +15,16 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Cache Maven packages
-        uses: actions/cache@v4
+        uses: actions/cache/restore@v4
         with:
           path: ~/.m2
           key: m2-cache-${{ github.run_id }}
           restore-keys: m2-cache-
-          save-always: true
+
+      - name: Listing all jar files in maven repo (PRE)
+        run: |
+          jar_hash=$(find ~/.m2/repository -type f -name \*.jar | sort | md5sum)
+          echo "PRE_CACHE_HASH=$jar_hash" >> $GITHUB_ENV
 
       - name: Cache Pip Packages
         uses: actions/cache@v4
@@ -52,3 +56,15 @@ jobs:
 
       - name: Build project with Maven
         run: mvn --batch-mode clean verify
+
+      - name: Listing all jar files in maven repo (POST)
+        run: |
+          jar_hash=$(find ~/.m2/repository -type f -name \*.jar | sort | md5sum)
+          echo "POST_CACHE_HASH=$jar_hash" >> $GITHUB_ENV
+
+      - name: Cache Maven packages
+        if: env.PRE_CACHE_HASH != env.POST_CACHE_HASH
+        uses: actions/cache/save@v4
+        with:
+          path: ~/.m2
+          key: m2-cache-${{ github.run_id }}
