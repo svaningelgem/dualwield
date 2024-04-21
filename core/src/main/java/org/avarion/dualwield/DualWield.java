@@ -102,7 +102,7 @@ public final class DualWield extends JavaPlugin {
         });
     }
 
-    private int getSpigotID() { return 123; }
+    private int getSpigotID() { return 116310; }
     private int getBStatsID() { return 21641; }
 
     private void registerBStats() { new Metrics(this, getBStatsID()); }
