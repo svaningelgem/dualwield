@@ -4,7 +4,7 @@ A lightweight and unintrusive plugin to add vanilla friendly attacking and minin
 
 # Supports:
 
-* 1.9.\*, 1.10\.*, 1.11\.*, 1.12\.*, 1.13\.*, 1.14\.*, 1.15\.*, 1.16\.*, 1.17\.*, 1.18\.*, 1.19\.*, 1.20\.*
+* 1.9.\*, 1.10.\*, 1.11.\*, 1.12.\*, 1.13.\*, 1.14.\*, 1.15.\*, 1.16.\*, 1.17.\*, 1.18.\*, 1.19.\*, 1.20.\*
 * Spigot, Paper, Purpur, Pufferfish, Airplane, Tuinity, CraftBukkit, Mohist, Magma, CatServer, MultiPaper
 * GeyserMC (Bedrock Players)
 * Forge/Bukkit Hybrid servers (Mohist, Magma, CatServer)
