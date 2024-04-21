@@ -2,6 +2,12 @@
 
 A lightweight and unintrusive plugin to add vanilla friendly attacking and mining with off-hand weapons and tools.​
 
+# Acknowledgement
+This plugin was made by Ranull, and imported via his [GitLab repository](https://gitlab.com/ranull/minecraft/dualwield). Minecraft 1.20.2 and higher wasn't supported, so I decided to fork it and make it compatible.
+
+Original code was released under GPLv3. So everything will be kept under the same license here.
+
+
 # Supports:
 
 * 1.9.\*, 1.10.\*, 1.11.\*, 1.12.\*, 1.13.\*, 1.14.\*, 1.15.\*, 1.16.\*, 1.17.\*, 1.18.\*, 1.19.\*, 1.20.\*
