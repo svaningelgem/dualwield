@@ -19,3 +19,4 @@ apache-maven-*/
 BuildData/
 CraftBukkit/
 Spigot/
+spigot-*.jar
